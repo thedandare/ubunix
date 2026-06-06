@@ -1,0 +1,26 @@
+name: microk8s
+description: MicroK8s LXD Profile
+devices:
+  eth0:
+    network: lxdbr0
+    type: nic
+  root:
+    path: /
+    pool: hda_nvme_zfs_pool
+    type: disk
+config:
+  security.privileged: 'true'
+  security.nesting: 'true'
+  boot.autostart: 'true'
+  linux.kernel_modules: ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,ip_tables,ip6_tables,netlink_diag,nf_nat,overlay,br_netfilter
+  raw.lxc: |
+    lxc.apparmor.profile=unconfined
+    lxc.mount.auto=proc:rw sys:rw cgroup:rw
+    lxc.cgroup.devices.allow=a
+    lxc.cap.drop=
+  security.syscalls.intercept.bpf: 'true'
+  security.syscalls.intercept.bpf.devices: 'true'
+access_entitlements:
+  - can_delete
+  - can_edit
+project: default

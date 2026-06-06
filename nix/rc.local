@@ -1,0 +1,6 @@
+#!/bin/sh
+echo Executando rc.local
+export POD_NAME=my-headlamp-7d88bdc49c-p628z
+export CONTAINER_PORT=4466
+microk8s  kubectl --namespace kube-system port-forward $POD_NAME 4466:$CONTAINER_PORT --address 0.0.0.0 &
+exit 0
