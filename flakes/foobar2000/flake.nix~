@@ -1,0 +1,33 @@
+{
+  description = "A very basic flake";
+
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+    erosanix.url = "github:emmanuelrosa/erosanix";
+
+  };
+
+  outputs =
+    {
+      self,
+      nixpkgs,
+      erosanix,
+    }:
+    {
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          erosanix.nixosModules.foobar2000
+          ./configuration.nix
+        ];
+      };
+      packages.x86_64-linux.foobar = erosanix.packages.x86_64-linux.foobar2000;
+      packages.x86_64-linux.caustic = erosanix.packages.x86_64-linux.caustic;
+      packages.x86_64-linux.kindle = erosanix.packages.x86_64-linux.amazon-kindle;
+      packages.x86_64-linux.microcap = erosanix.packages.x86_64-linux.microcap;
+
+      #       packages.x86_64-linux.foobar2000 = self.packages.x86_64-linux.foobar;
+      packages.x86_64-linux.default = self.packages.x86_64-linux.microcap;
+
+    };
+}

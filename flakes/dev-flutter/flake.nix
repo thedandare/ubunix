@@ -1,0 +1,60 @@
+{
+  description = "Flutter Template";
+
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs =
+    {
+      nixpkgs,
+      flake-utils,
+      ...
+    }:
+    {
+      nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          ./configuration.nix
+          ./hardware-configuration.nix
+        ];
+
+        pkgs = import nixpkgs {
+
+          config = {
+            android_sdk.accept_license = true;
+            allowUnfree = true;
+          };
+        };
+        buildInputs = [
+          androidsdk
+
+          pkgs.flutter341
+          pkgs.jdk11
+        ];
+
+        nativeBuildInputs = [
+        ];
+
+        # Android config
+        buildToolsVersion = "30.0.3";
+        androidComposition = pkgs.androidenv.composeAndroidPackages {
+          buildToolsVersions = [
+            buildToolsVersion
+            "28.0.3"
+          ];
+          platformVersions = [
+            "31"
+            "28"
+          ];
+          abiVersions = [
+            "armeabi-v7a"
+            "arm64-v8a"
+          ];
+        };
+        androidSdk = androidComposition.androidsdk;
+      };
+    };
+
+}
