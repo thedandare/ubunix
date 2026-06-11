@@ -2,12 +2,12 @@
 echo $1
 export GIT_SSH_COMMAND="ssh -i ~/.ssh/tdd_id_ed25519"
 if [ -n $1 ]; then
-    echo "[0;31m parama 1:$1"
+    echo -e  "[0;31m parama 1:$1"
     git add $1 -A
     git commit -m 'auto-commit $(uname -a) em $(date) '
 
 else
-    echo "[0;31m git add não executado"
+    echo -e "[0;31m git add não executado"
 
     git status | grep Untracked
     read -n 1 -p "Commit?" answer
