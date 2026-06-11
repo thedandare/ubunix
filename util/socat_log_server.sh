@@ -8,5 +8,5 @@
 
 
 # To make your logs more useful by adding connection details and timestamps directly into the terminal output, add the -v (verbose) flag and the -d -d (debug) flags:
-socat -d -d -v TCP4-LISTEN:1000,bind=100.100.1.2,fork stdout | tee -a traffic.log
+tmux new -d -s socat100  "socat -d -d -v TCP4-LISTEN:100,bind=100.100.1.2,fork stdout | tee -a /var/log/socat100.log"
 
