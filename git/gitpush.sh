@@ -2,7 +2,7 @@
 echo $1
 export GIT_SSH_COMMAND="ssh -i ~/.ssh/tdd_id_ed25519"
 if [ -n $1 ]; then
-    echo -e  "[0;31m parama 1:$1"
+    echo -e  "\[0;31m parama 1:$1"
     git add $1 -A
     git commit -m 'auto-commit $(uname -a) em $(date) '
 
