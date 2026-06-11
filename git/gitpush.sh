@@ -6,6 +6,7 @@ if [ -n $1 ]; then
     git commit -m 'auto-commit $(uname -a) em $(date) '
 
 else
+    echo [0;31m git add não executado
 
     git status | grep Untracked
     read -n 1 -p 'Commit?' answer
