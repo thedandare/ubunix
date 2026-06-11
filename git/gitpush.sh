@@ -17,6 +17,13 @@ else
     esac
 fi
 
+read -n 1 -p 'Push?' answer
+    case "${answer,,}" in
+    s/y)
+        git commit -m 'auto-commit $(uname -a) em $(date) '
+        ;;
+    esac
+
+
 # git push -u origin main git@github.com:thedandare/ubunix.git
-git push --set-upstream git@github.com:thedandare/ubunix.git main
 
