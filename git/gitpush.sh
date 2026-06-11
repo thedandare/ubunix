@@ -9,7 +9,7 @@ else
     echo [0;31m git add não executado
 
     git status | grep Untracked
-    read -n 1 -p 'Commit?' answer
+    read -n 1 -p "Commit?" answer
     case "${answer,,}" in
     s/y)
         git commit -m 'auto-commit $(uname -a) em $(date) '
@@ -17,7 +17,7 @@ else
     esac
 fi
 
-read -n 1 -p 'Push?' answer
+read -n 1 -p "Push" answer
     case "${answer,,}" in
     s/y)
         git commit -m 'auto-commit $(uname -a) em $(date) '
