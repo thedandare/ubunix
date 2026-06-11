@@ -20,8 +20,8 @@ fi
 read -n 1 -p "Push" answer
     case "${answer,,}" in
     s/y)
-        git commit -m 'auto-commit $(uname -a) em $(date) '
-        ;;
+        git push --set-upstream git@github.com:thedandare/ubunix.git main
+    ;;
     esac
 
 
