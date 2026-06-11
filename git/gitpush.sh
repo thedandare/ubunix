@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 echo $1
 export GIT_SSH_COMMAND="ssh -i ~/.ssh/tdd_id_ed25519"
 if [ -n $1 ]; then
