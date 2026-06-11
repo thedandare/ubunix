@@ -15,4 +15,6 @@ else
     esac
 fi
 
-git push git@github.com:thedandare/ubunix.git
+# git push -u origin main git@github.com:thedandare/ubunix.git
+git push --set-upstream git@github.com:thedandare/ubunix.git main
+
