@@ -18,11 +18,11 @@ else
 fi
 
 read -n 1 -p "Push" answer
-    case "${answer,,}" in
+case "${answer,,}" in
     s/y)
         git push --set-upstream git@github.com:thedandare/ubunix.git main
     ;;
-    esac
+esac
 
 
 # git push -u origin main git@github.com:thedandare/ubunix.git
