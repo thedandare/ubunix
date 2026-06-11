@@ -1,0 +1,103 @@
+#cloud-config
+apk_update: true
+
+packages:
+  - curl
+  - bash
+  - zsh
+  - xz
+  - shadow
+  - coreutils
+  - git
+
+runcmd:
+  # 1. Instala as ferramentas necessárias
+  - apk update && apk add curl bash zsh xz shadow coreutils git
+  
+  # 2. ALTERAÇÃO CRÍTICA: Copia o binário REAL do cp (GNU) direto para /bin/cp (Evita que o Nix perda o PATH)
+  # - rm -f /bin/cp
+  # - cp /usr/bin/cp /bin/cp
+  # - ln -sf /usr/bin/bash /bin/bash
+  - addgroup -S nogroup || true
+  - mkdir -p /nix && chown root:users /nix && chmod 0755 /nix
+
+  - export HOME=/home/alpine 
+
+  - mkdir -p /nix && chown root:users /nix && chmod 0755 /nix
+  
+  # 3. Executa o instalador usando o SH nativo estável (Evita o erro do bash not found)
+  - |
+    cat << 'SCRIPT_EOF' > /tmp/instalar_nix.sh
+    #!/bin/sh
+    curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
+    apk add cni-plugins
+    apk add flannel
+    apk add flannel-contrib-cni
+    apk add kubelet  
+    apk add kubeadm
+    apk add kubectl
+    apk add uuidgen
+    apk add nfs-utils
+    SCRIPT_EOF
+  - chmod +x /tmp/instalar_nix.sh
+  - /tmp/instalar_nix.sh >> /var/log/nix-install.log 2>&1
+  
+  # 4. Carrega o ambiente do Nix
+  - if [ -f /root/.nix-profile/etc/profile.d/nix.sh ]; then . /root/.nix-profile/etc/profile.d/nix.sh; elif [ -f /etc/profile.d/nix.sh ]; then . /etc/profile.d/nix.sh; fi
+  
+  # 5. Ativa o suporte a Flakes
+  - mkdir -p /root/.config/nix
+  - echo "experimental-features = nix-command flakes" >> /root/.config/nix/nix.conf
+  
+  # 6. Configuração do Home Manager
+  - mkdir -p /root/.config/home-manager
+  - |
+    cat << 'INNER_EOF' > /root/.config/home-manager/flake.nix
+    {
+      description = "Home Manager Automatizado";
+      inputs = {
+        nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+        home-manager = {
+          url = "github:nix-community/home-manager";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+      };
+      outputs = { nixpkgs, home-manager, ... }: {
+        homeConfigurations."root" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [ ./home.nix ];
+        };
+      };
+    }
+    INNER_EOF
+  - |
+    cat << 'INNER_EOF' > /root/.config/home-manager/home.nix
+    { pkgs, ... }: {
+      home.username = "root";
+      home.homeDirectory = "/root";
+      home.stateVersion = "24.11";
+      home.packages = [
+        pkgs.htop
+        pkgs.turbovnc
+      ];
+      programs.home-manager.enable = true;
+    }
+    INNER_EOF
+    
+  # 7. Ativa o ambiente declarativo
+  - nix run github:nix-community/home-manager -- switch --flake /root/.config/home-manager/#root >> /var/log/nix-install.log 2>&1
+  
+  # 8. Persistência de Shell para seus futuros acessos
+  - echo 'if [ -f /root/.nix-profile/etc/profile.d/nix.sh ]; then . /root/.nix-profile/etc/profile.d/nix.sh; elif [ -f /etc/profile.d/nix.sh ]; then . /etc/profile.d/nix.sh; fi' >> /etc/profile
+  - echo 'export PATH=$HOME/.nix-profile/bin:$PATH' >> /root/.bashrc
+  - echo 'export PATH=$HOME/.nix-profile/bin:$PATH' >> /root/.zshrc
+  - echo 'export HOME=$HOME' >> /root/.zshrc
+  - echo 'export HOME=$HOME' >> /root/.bashrc
+  - |
+   cat << 'SCRIPT2_EOF' > /tmp/instalar_deps.sh
+    #!/bin/sh
+    #add kernel module for networking stuff
+    SCRIPT2_EOF
+  - chmod +x /tmp/instalar_deps.sh
+  - /tmp/instalar_deps.sh >> /var/log/nix-install-deps.log 2>&1
+

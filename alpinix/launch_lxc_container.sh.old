@@ -1,0 +1,70 @@
+#!/bin/sh
+
+
+cat << 'EOF' > monitorar-nix.sh
+#!/bin/sh
+
+CONTAINER="teste-nix"
+LOG_FILE="/var/log/cloud-init-output.log"
+
+echo -e "\e[1;34m[==>] Iniciando monitoramento do Nix no container: $CONTAINER\e[0m"
+
+# 1. Aguarda o container estar rodando
+echo -n "Aguardando o container iniciar..."
+until lxc info "$CONTAINER" 2>/dev/null | grep -q "Status: RUNNING"; do
+    sleep 1
+    echo -n "."
+done
+echo -e " \e[1;32m[OK]\e[0m"
+
+# 2. Aguarda o cloud-init criar o arquivo de log (Evita o erro de "No such file")
+echo -n "Aguardando o cloud-init gerar o arquivo de log..."
+until lxc exec "$CONTAINER" -- test -f "$LOG_FILE" 2>/dev/null; do
+    sleep 1
+    echo -n "."
+done
+echo -e " \e[1;32m[Criado]\e[0m"
+
+# 3. Monitora o log em tempo real
+echo -e "\e[1;33m[==>] Lendo o log do cloud-init (Pressione CTRL+C para sair):\e[0m"
+echo "----------------------------------------------------------------------"
+lxc exec "$CONTAINER" -- tail -f "$LOG_FILE"
+EOF
+
+
+cat << 'EOF' > monitorar-nix.sh
+#!/bin/sh
+
+CONTAINER="teste-nix"
+LOG_FILE="/var/log/cloud-init-output.log"
+
+echo -e "\e[1;34m[==>] Iniciando monitoramento do Nix no container: $CONTAINER\e[0m"
+
+# 1. Aguarda o container estar rodando
+echo -n "Aguardando o container iniciar..."
+until lxc info "$CONTAINER" 2>/dev/null | grep -q "Status: RUNNING"; do
+    sleep 1
+    echo -n "."
+done
+echo -e " \e[1;32m[OK]\e[0m"
+
+# 2. Aguarda o cloud-init criar o arquivo de log (Evita o erro de "No such file")
+echo -n "Aguardando o cloud-init gerar o arquivo de log..."
+until lxc exec "$CONTAINER" -- test -f "$LOG_FILE" 2>/dev/null; do
+    sleep 1
+    echo -n "."
+done
+echo -e " \e[1;32m[Criado]\e[0m"
+
+# 3. Monitora o log em tempo real
+echo -e "\e[1;33m[==>] Lendo o log do cloud-init (Pressione CTRL+C para sair):\e[0m"
+echo "----------------------------------------------------------------------"
+lxc exec "$CONTAINER" -- tail -f "$LOG_FILE"
+EOF
+
+
+chmod +x monitorar-nix.sh
+
+lxc launch images:alpine/3.23/cloud teste-nix --config=cloud-init.user-data="$(cat nix-config.yaml)"
+./monitorar-nix.sh
+
