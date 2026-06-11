@@ -1,5 +1,5 @@
 #!/bin/sh
-CONTAINER="teste-ubnix"
+CONTAINER="ubun1x"
 LOG_FILE="nix-install.log"
 
 echo -e "\e[1;34m[==>] Iniciando monitoring do Nix no container Ubuntu: $CONTAINER\e[0m"
