@@ -1,0 +1,67 @@
+@startuml
+skinparam BackgroundColor #1e1e1e
+skinparam Handwritten false
+skinparam DefaultFontColor #ffffff
+skinparam DefaultFontSize 13
+
+skinparam component {
+    BackgroundColor #2d2d2d
+    BorderColor #5c5c5c
+    FontColor #ffffff
+}
+
+skinparam node {
+    BackgroundColor #0d1117
+    BorderColor #30363d
+    FontColor #58a6ff
+}
+
+skinparam queue {
+    BackgroundColor #21262d
+    BorderColor #30363d
+    FontColor #ecf2f8
+}
+
+title Arquitetura de Armazenamento Multiboot & Otimização RAM (72GB)
+
+node "Memória RAM (72GB DDR)" as ram {
+    component "Raiz Efêmera (tmpfs)\n[ / ] - 32 GB\n(Reseta a cada boot)" as ram_root #005f73
+    component "Cache de Usuário (tmpfs)\n[ ~/.cache ] - 16 GB\n(Ultra Velocidade)" as ram_cache #0a9396
+}
+
+node "Controlador NVMe PCIe\n(Velocidade: ~3000 MB/s)" as nvme_ctrl {
+    queue "/dev/nvme0n1\n(Disco de Alta Performance)" as nvme {
+        component "p3: refs (Windows Data)" as nvme_p3 #94d2bd
+        component "p4: /dev/nvme0n1p4 (kali-usr)" as nvme_p4 #e9d8a6
+        component "p7: /dev/nvme0n1p7 (kali-var)" as nvme_p7 #ee9b00
+        component "p8: /dev/nvme0n1p8 (lxc-btrfs)" as nvme_p8 #ca6702
+        component "p9: /dev/nvme0n1p9 (kali-opt)" as nvme_p9 #bb3e03
+        component "p10: /dev/nvme0n1p10 (zfs_pool)" as nvme_p10 #ae2012
+        component "Espaço Livre: 32 GB" as nvme_free #5c5c5c
+        component "p11: /dev/nvme0n1p11 (kubuntu_2604)" as nvme_p11 #9b2226
+        component "p5: /dev/nvme0n1p5 (kali-efi)" as nvme_p5 #005f73
+        component "p6: /dev/nvme0n1p6 (kali-root)" as nvme_p6 #0a9396
+    }
+}
+
+node "Controlador SATA\n(Evita Ponto Único de Falha)" as sata_ctrl {
+    queue "/dev/sdc\n(SSD SATA Estável)" as sdc {
+        component "sdc1: grub2 core" as sdc_p1 #5c5c5c
+        component "sdc2: efi-nix (FAT32 /boot)" as sdc_p2 #005f73
+        component "sdc3: efi-win (FAT32)" as sdc_p3 #94d2bd
+        component "sdc4: Windows 11 (NTFS /c)" as sdc_win #94d2bd
+        component "sdc5: NixOS Armazém (ext4 /nix)" as sdc_nix #2a9d8f
+        component "sdc6: Diretório /opt (ext4)" as sdc_opt #e76f51
+        component "sdc9: NOVA PARTIÇÃO (ext4 /home)\n[ 151.70 GiB Persistente ]" as sdc_home #f4a261
+        component "sdc7: lexar-win-srv (NTFS)" as sdc_srv #94d2bd
+        component "sdc8: Windows Server Data (NTFS)" as sdc_srv_data #94d2bd
+    }
+}
+
+' Ligações de montagem do NixOS
+ram_root .[#00f5d4].> sdc_nix : "Monta base física em /nix"
+ram_root .[#ff007f].> sdc_home : "Monta dados persistentes em /home"
+ram_root .[#00bbf9].> sdc_opt : "Monta ferramentas antigas em /opt"
+ram_cache -[#yellow]-> ram_root : "Sobrepõe a pasta /home/user/.cache na RAM"
+
+@endum
