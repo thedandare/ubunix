@@ -3,3 +3,6 @@ secret/
 result
 .direnv
 .terraform/
+
+**/.terraform/
+.terraform
