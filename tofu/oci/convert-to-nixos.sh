@@ -42,7 +42,7 @@ fi
 echo "Testando conexão SSH com chave $SSH_KEY..."
 ssh-keyscan -H "$INSTANCE_IP" >> ~/.ssh/known_hosts 2>/dev/null || true
 
-if ! ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$SSH_KEY" root@"$INSTANCE_IP" echo "SSH OK"; then
+if ! ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$SSH_KEY" ubuntu@"$INSTANCE_IP" echo "SSH OK"; then
   echo "Erro: Não foi possível conectar via SSH como root"
   echo "Dica: certifique-se de que o usuário root tem a chave SSH autorizada"
   exit 1
@@ -81,26 +81,37 @@ if [ "$(id -u)" -eq 0 ] && [ "$FLAKE_OWNER" != "root" ]; then
   cp "$SSH_KEY" "$TMP_KEY"
   chown -R "$FLAKE_OWNER:$FLAKE_GROUP" "$TMP_KEY_DIR"
   chmod 600 "$TMP_KEY"
+  TMP_EXTRA="$(mktemp -d)"
+  mkdir -p "$TMP_EXTRA/etc/nixos"
+  cp -r "$REPO_ROOT/nixos/ocnix/." "$TMP_EXTRA/etc/nixos/"
+  chown -R "$FLAKE_OWNER:$FLAKE_GROUP" "$TMP_EXTRA"
   su - "$FLAKE_OWNER" -c "
     cd '$FLAKE_DIR' &&
     nixos-anywhere \
       --generate-hardware-config nixos-generate-config ./hardware-config.nix \
       --flake '.#ocinix' \
       --impure \
-      --target-host 'root@$INSTANCE_IP' \
+      --extra-files '$TMP_EXTRA' \
+      --target-host 'ubuntu@$INSTANCE_IP' \
       -i '$TMP_KEY'
   "
+  rm -rf "$TMP_EXTRA"
   rm -rf "$TMP_KEY_DIR"
 else
+  TMP_EXTRA="$(mktemp -d)"
+  mkdir -p "$TMP_EXTRA/etc/nixos"
+  cp -r "$REPO_ROOT/nixos/ocnix/." "$TMP_EXTRA/etc/nixos/"
   nixos-anywhere \
     --generate-hardware-config nixos-generate-config ./hardware-config.nix \
     --flake ".#ocinix" \
     --impure \
-    --target-host "root@$INSTANCE_IP" \
+    --extra-files "$TMP_EXTRA" \
+    --target-host "ubuntu@$INSTANCE_IP" \
     -i "$SSH_KEY"
+  rm -rf "$TMP_EXTRA"
 fi
 
 echo ""
 echo "=== Conversão concluída ==="
 echo "A instância será reiniciada com NixOS"
-echo "Após reiniciar, conecte com: ssh root@$INSTANCE_IP"
+echo "Após reiniciar, conecte com: ssh ubuntu@$INSTANCE_IP"

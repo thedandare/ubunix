@@ -1,0 +1,101 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  region = "sa-east-1"
+}
+
+locals {
+  ssh_port = 2409
+
+  # Coloque aqui as chaves públicas que poderão entrar como root.
+  # Pode misturar arquivos locais e strings literais.
+  ssh_public_keys = [
+    trimspace(file("~/.ssh/id_ed25519.pub")),
+    trimspace(file("~/.ssh/root_id_ed25519.pub")),
+    trimspace(file("~/.ssh/tdd_id_ed25519.pub")),
+    trimspace(file("~/.ssh/leo.ssh.pub")),
+
+    # exemplo:
+    # "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA.... outra-chave"
+  ]
+
+  # Converte a lista acima para sintaxe de lista do Nix:
+  ssh_public_keys_nix = join("\n    ", [
+    for key in local.ssh_public_keys : "\"${key}\""
+  ])
+}
+
+data "aws_ami" "nixos_x86_64" {
+  owners      = ["427812963091"]
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["nixos/26.05*"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+
+resource "aws_security_group" "nixos" {
+  name        = "nixos-opentofu-test"
+  description = "NixOS SSH custom port"
+
+  ingress {
+    description = "SSH custom port"
+    from_port   = local.ssh_port
+    to_port     = local.ssh_port
+    protocol    = "tcp"
+
+    # Depois a gente restringe para teu IP.
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "nixos_x86_64" {
+  ami                    = data.aws_ami.nixos_x86_64.id
+  instance_type          = "t3.nano"
+  vpc_security_group_ids = [aws_security_group.nixos.id]
+  user_data = templatefile("${path.module}/user-data.nix.tftpl", {
+    ssh_port            = local.ssh_port
+    ssh_public_keys_nix = local.ssh_public_keys_nix
+  })
+
+  instance_market_options {
+    market_type = "spot"
+
+    spot_options {
+      spot_instance_type             = "one-time"
+      instance_interruption_behavior = "terminate"
+    }
+  }
+  tags = {
+    Name = "nixos-opentofu-test"
+  }
+}
+
+output "public_ip" {
+  value = aws_instance.nixos_x86_64.public_ip
+}
+
+output "ssh_command" {
+  value = "ssh -p ${local.ssh_port} root@${aws_instance.nixos_x86_64.public_ip}"
+}
