@@ -1,0 +1,5 @@
+secret/
+.old/
+result
+.direnv
+.terraform/
