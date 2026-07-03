@@ -42,7 +42,7 @@ fi
 echo "Testando conexão SSH com chave $SSH_KEY..."
 ssh-keyscan -H "$INSTANCE_IP" >> ~/.ssh/known_hosts 2>/dev/null || true
 
-if ! ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i "$SSH_KEY" ubuntu@"$INSTANCE_IP" echo "SSH OK"; then
+if ! ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i $SSH_KEY "root@$INSTANCE_IP" echo "SSH OK"; then
   echo "Erro: Não foi possível conectar via SSH como root"
   echo "Dica: certifique-se de que o usuário root tem a chave SSH autorizada"
   exit 1
@@ -53,13 +53,14 @@ echo "Iniciando conversão para NixOS..."
 echo "Isso vai REINSTALAR o sistema operacional!"
 
 # Garantir que o diretório do flake seja confiável pelo git quando rodado como root
-REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(dirname "$0")")"
+#REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(dirname "$0")")"
+REPO_ROOT="/osnix"
 if [ -n "$REPO_ROOT" ]; then
   git config --global --add safe.directory "$REPO_ROOT" || true
 fi
 
 if [ -z "$AUTO_APPROVE" ]; then
-  read -p "Continuar? (y/N) " -n 1 -r
+  read -p "Continuar? " -n 1 -r
   echo
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
@@ -92,7 +93,7 @@ if [ "$(id -u)" -eq 0 ] && [ "$FLAKE_OWNER" != "root" ]; then
       --flake '.#ocinix' \
       --impure \
       --extra-files '$TMP_EXTRA' \
-      --target-host 'ubuntu@$INSTANCE_IP' \
+      --target-host 'root@$INSTANCE_IP' \
       -i '$TMP_KEY'
   "
   rm -rf "$TMP_EXTRA"
@@ -106,7 +107,7 @@ else
     --flake ".#ocinix" \
     --impure \
     --extra-files "$TMP_EXTRA" \
-    --target-host "ubuntu@$INSTANCE_IP" \
+    --target-host "root@$INSTANCE_IP" \
     -i "$SSH_KEY"
   rm -rf "$TMP_EXTRA"
 fi

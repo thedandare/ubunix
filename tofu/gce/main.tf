@@ -39,6 +39,7 @@ locals {
       enable-oslogin         = var.enable_oslogin ? "TRUE" : "FALSE"
       block-project-ssh-keys = "TRUE"
       serial-port-enable     = "TRUE"
+      enable-oslogin = "TRUE"
 
       # Spot pode ser preemptada. Este script apenas deixa rastro no journal/serial console.
       # A persistencia real deve estar no NixOS/servicos, nao no Terraform.
