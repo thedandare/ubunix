@@ -59,10 +59,6 @@ let
       - systemctl enable snapd.service snapd.socket || true
       - systemctl start snapd.service snapd.socket || true
 
-      - curl -fsSL https://tailscale.com/install.sh | sh
-      - sleep 2
-      - tailscale up --auth-key=tskey-auth-kmTLYD4YpF11CNTRL-UfNAWAmZYcWq6hpmMYSAdWtt7gSFwENk || /usr/local/bin/autoconnect-tailscale.sh
-
       - snap install microk8s --channel=1.36/stable --classic
       - snap refresh --hold microk8s
 
@@ -121,9 +117,6 @@ in
   networking.hostName = "amnix";
   networking.nftables.enable = true;
 
-  # Bridge standalone para o Incus (sem interface fisica anexada, seguro em instancia AWS com 1 NIC).
-  # O leonix/networks/default.nix usa "enp7s0" (bare-metal com NIC dedicada); aqui nao ha NIC extra,
-  # entao o br0 fica isolado e o trafego sai via NAT/masquerade pela interface principal.
   boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
 
   networking.bridges."br0".interfaces = [ ];
@@ -172,18 +165,16 @@ in
   programs.neovim.enable = true;
  environment.systemPackages = with pkgs; [
   git vim newt
-    coreutils   # utilitários POSIX essenciais; binários: ls, cp, mv, rm, cat, echo, mkdir, chmod, chown, date, head, tail, wc, sort, uniq, cut, tr, tee, pwd, touch, ln, stat, df, du, id, whoami, env, sleep, kill, …
-    findutils   # busca de arquivos no sistema; binários: find, xargs, locate, updatedb
-    gnugrep     # busca de padrões em texto (regex); binários: grep, egrep, fgrep
-    gnused      # editor de fluxo para substituição/transformação de texto; binários: sed
-    htop        # monitor de processos interativo (top melhorado); binários: htop
-    iproute2    # configuração de rede moderna (substitui net-tools); binários: ip, ss, tc, bridge, nstat, routel
-    jq          # processamento e filtragem de JSON na linha de comando; binários: jq
+    coreutils
+    findutils
+    gnugrep
+    gnused
+    htop
+    iproute2
+    jq
   ];
   security.sudo.wheelNeedsPassword = false;
- 
- 
- # https://wiki.nixos.org/wiki/Tailscale
+
   services.tailscale = {
     enable = true;
     openFirewall = true;
@@ -194,8 +185,6 @@ in
     };
   };
 
-  # 2. Force tailscaled to use nftables (Critical for clean nftables-only systems)
-  # This avoids the "iptables-compat" translation layer issues.
   systemd.services.tailscaled = {
     after = [ "provision-secrets.service" ];
     requires = [ "provision-secrets.service" ];
@@ -239,7 +228,6 @@ EOF
     '';
   };
 
-  # ===== Módulo Incus embutido =====
   virtualisation.incus = {
     enable = true;
     ui.enable = true;
@@ -305,11 +293,9 @@ EOF
     };
   };
 
-  # 3 containers MicroK8s por host, cada um com IP dedicado no br0 (10.10.${subnet_octet}.2/3/4).
-  # O network-config e setado por instancia (incus init + config set + start) para
-  # evitar que os 3 containers herdem o mesmo IP estatico do profile "microk8s".
-  systemd.services."init-incus-${container_name}-1" = {
-    description = "Garante a existencia e execucao do container MicroK8s ${container_name}-1";
+  # 3 containers MicroK8s, IPs 10.10.${subnet_octet}.2/3/4; network-config por instancia.
+  systemd.services."init-incus-${container_name}" = {
+    description = "Garante a existencia e execucao dos containers MicroK8s ${container_name}-1/2/3";
 
     after = [
       "incus.service"
@@ -328,145 +314,50 @@ EOF
       RemainAfterExit = false;
       Restart = "on-failure";
       RestartSec = "5s";
+      # Type=oneshot tem TimeoutStartSec padrao de 90s. 3 containers sequenciais
+      # (pull de imagem + start + sleep 5 cada) passam disso facilmente, e o
+      # systemd mata o script no meio do loop (visto na pratica: 1 container
+      # criado via "incus init" mas nunca chega no "incus start").
+      TimeoutStartSec = "900s";
     };
 
     script = ''
-      NAME="${container_name}-1"
-      IP="10.10.${subnet_octet}.2"
-      if ! $${pkgs.incus}/bin/incus info $NAME >/dev/null 2>&1; then
-        echo "Container $NAME nao encontrado. Criando de forma declarativa..."
-        $${pkgs.incus}/bin/incus init images:ubuntu/26.04/cloud $NAME -p default -p microk8s
-        $${pkgs.incus}/bin/incus config set $NAME user.network-config - <<'NETEOF'
+      GW="10.10.${subnet_octet}.1"
+      for i in 1 2 3; do
+        case $i in
+          1) NAME="${container_name}-1"; IP="10.10.${subnet_octet}.2" ;;
+          2) NAME="${container_name}-2"; IP="10.10.${subnet_octet}.3" ;;
+          3) NAME="${container_name}-3"; IP="10.10.${subnet_octet}.4" ;;
+        esac
+
+        if ! $${pkgs.incus}/bin/incus info $NAME >/dev/null 2>&1; then
+          echo "Container $NAME nao encontrado. Criando de forma declarativa..."
+          $${pkgs.incus}/bin/incus init images:ubuntu/26.04/cloud $NAME -p default -p microk8s
+          $${pkgs.incus}/bin/incus config set $NAME user.network-config - <<NETEOF
 version: 2
 ethernets:
   eth0:
     addresses:
-      - 10.10.${subnet_octet}.2/24
+      - $IP/24
     routes:
       - to: default
-        via: 10.10.${subnet_octet}.1
+        via: $GW
     nameservers:
       addresses:
         - 1.1.1.1
         - 8.8.8.8
 NETEOF
-        $${pkgs.incus}/bin/incus start $NAME
-      else
-        echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
-        $${pkgs.incus}/bin/incus start $NAME || true
-      fi
-      sleep 5
-      $${pkgs.incus}/bin/incus exec $NAME -- ip addr add $IP/24 dev eth0 || true
-      $${pkgs.incus}/bin/incus exec $NAME -- ip route add default via 10.10.${subnet_octet}.1 || true
-      $${pkgs.incus}/bin/incus exec $NAME -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
-    '';
-  };
+          $${pkgs.incus}/bin/incus start $NAME
+        else
+          echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
+          $${pkgs.incus}/bin/incus start $NAME || true
+        fi
 
-  systemd.services."init-incus-${container_name}-2" = {
-    description = "Garante a existencia e execucao do container MicroK8s ${container_name}-2";
-
-    after = [
-      "incus.service"
-      "incus-preseed.service"
-      "network-online.target"
-    ];
-    wants = [
-      "incus.service"
-      "incus-preseed.service"
-      "network-online.target"
-    ];
-    wantedBy = [ "multi-user.target" ];
-
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = false;
-      Restart = "on-failure";
-      RestartSec = "5s";
-    };
-
-    script = ''
-      NAME="${container_name}-2"
-      IP="10.10.${subnet_octet}.3"
-      if ! $${pkgs.incus}/bin/incus info $NAME >/dev/null 2>&1; then
-        echo "Container $NAME nao encontrado. Criando de forma declarativa..."
-        $${pkgs.incus}/bin/incus init images:ubuntu/26.04/cloud $NAME -p default -p microk8s
-        $${pkgs.incus}/bin/incus config set $NAME user.network-config - <<'NETEOF'
-version: 2
-ethernets:
-  eth0:
-    addresses:
-      - 10.10.${subnet_octet}.3/24
-    routes:
-      - to: default
-        via: 10.10.${subnet_octet}.1
-    nameservers:
-      addresses:
-        - 1.1.1.1
-        - 8.8.8.8
-NETEOF
-        $${pkgs.incus}/bin/incus start $NAME
-      else
-        echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
-        $${pkgs.incus}/bin/incus start $NAME || true
-      fi
-      sleep 5
-      $${pkgs.incus}/bin/incus exec $NAME -- ip addr add $IP/24 dev eth0 || true
-      $${pkgs.incus}/bin/incus exec $NAME -- ip route add default via 10.10.${subnet_octet}.1 || true
-      $${pkgs.incus}/bin/incus exec $NAME -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
-    '';
-  };
-
-  systemd.services."init-incus-${container_name}-3" = {
-    description = "Garante a existencia e execucao do container MicroK8s ${container_name}-3";
-
-    after = [
-      "incus.service"
-      "incus-preseed.service"
-      "network-online.target"
-    ];
-    wants = [
-      "incus.service"
-      "incus-preseed.service"
-      "network-online.target"
-    ];
-    wantedBy = [ "multi-user.target" ];
-
-    serviceConfig = {
-      Type = "oneshot";
-      RemainAfterExit = false;
-      Restart = "on-failure";
-      RestartSec = "5s";
-    };
-
-    script = ''
-      NAME="${container_name}-3"
-      IP="10.10.${subnet_octet}.4"
-      if ! $${pkgs.incus}/bin/incus info $NAME >/dev/null 2>&1; then
-        echo "Container $NAME nao encontrado. Criando de forma declarativa..."
-        $${pkgs.incus}/bin/incus init images:ubuntu/26.04/cloud $NAME -p default -p microk8s
-        $${pkgs.incus}/bin/incus config set $NAME user.network-config - <<'NETEOF'
-version: 2
-ethernets:
-  eth0:
-    addresses:
-      - 10.10.${subnet_octet}.4/24
-    routes:
-      - to: default
-        via: 10.10.${subnet_octet}.1
-    nameservers:
-      addresses:
-        - 1.1.1.1
-        - 8.8.8.8
-NETEOF
-        $${pkgs.incus}/bin/incus start $NAME
-      else
-        echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
-        $${pkgs.incus}/bin/incus start $NAME || true
-      fi
-      sleep 5
-      $${pkgs.incus}/bin/incus exec $NAME -- ip addr add $IP/24 dev eth0 || true
-      $${pkgs.incus}/bin/incus exec $NAME -- ip route add default via 10.10.${subnet_octet}.1 || true
-      $${pkgs.incus}/bin/incus exec $NAME -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
+        sleep 5
+        $${pkgs.incus}/bin/incus exec $NAME -- ip addr add $IP/24 dev eth0 || true
+        $${pkgs.incus}/bin/incus exec $NAME -- ip route add default via $GW || true
+        $${pkgs.incus}/bin/incus exec $NAME -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
+      done
     '';
   };
 
