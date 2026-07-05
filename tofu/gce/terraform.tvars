@@ -6,3 +6,5 @@ machine_type       = "e2-standard-2"
 nixos_image_family = "nixos-26-05-k7"
 ssh_port           = 2409
 node_count         = 3
+boot_disk_size_gb = 30
+first_boot_script = "nixos-rebuild switch --flake /etc/nixos#gcnix"

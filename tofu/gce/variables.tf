@@ -1,5 +1,5 @@
 variable "project_id" {
-  description = "fibodevop"
+  description = "project-1ab07399-29ab-4352-8f8"
   type        = string
 }
 
@@ -185,6 +185,12 @@ variable "extra_metadata" {
   description = "Metadata extra para a instancia GCE."
   type        = map(string)
   default     = {}
+}
+
+variable "first_boot_script" {
+  description = "Comando(s) shell a rodar apenas na primeira inicializacao da VM (guest-agent do GCE roda startup-script a cada boot; usamos um marker file em /var/lib para garantir execucao unica). Vazio desabilita."
+  type        = string
+  default     = ""
 }
 
 variable "labels" {
