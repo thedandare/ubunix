@@ -5,3 +5,4 @@ instance_name      = "nixos-gce-spot-0"
 machine_type       = "e2-standard-2"
 nixos_image_family = "nixos-26-05-k7"
 ssh_port           = 2409
+node_count         = 3

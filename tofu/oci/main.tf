@@ -239,8 +239,8 @@
    }
   
    source_details {
-     source_type = "image"
-     source_id   = var.image_id
+     source_type = "bootVolume"
+     source_id   = "ocid1.bootvolume.oc1.sa-saopaulo-1.abtxeljr62urarvxuwo2zxzss6ou72vyb2tptbarfjl4lkho6vhr3q7hj22a"
    }
   
    create_vnic_details {

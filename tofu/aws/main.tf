@@ -109,6 +109,7 @@ resource "aws_instance" "nixos_x86_64" {
     tailscale_client_secret = var.tailscale_client_secret
     tailscale_script_b64    = filebase64("${path.module}/../../../nixos/leonix/virtualisation/init_tailscale.sh")
     container_name          = "amnix${count.index}s"
+    subnet_octet            = tostring(11 + count.index)
   })
   user_data_replace_on_change = true
 }

@@ -21,6 +21,12 @@ variable "name" {
   default     = "gcnix"
 }
 
+variable "node_count" {
+  description = "Quantidade de instancias NixOS a criar. count=3 cria gcnix0, gcnix1, gcnix2."
+  type        = number
+  default     = 1
+}
+
 variable "machine_type" {
   description = "Tipo da instancia. Para Incus/MicroK8s, comece com pelo menos e2-standard-2 ou maior."
   type        = string

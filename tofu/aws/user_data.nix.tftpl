@@ -48,8 +48,8 @@ let
         content: INJECT_TAILSCALE_B64_HERE
 
     runcmd:
-      - ip addr add 10.10.10.2/24 dev eth0 || true
-      - ip route add default via 10.10.10.1 || true
+      - ip addr add 10.10.${subnet_octet}.2/24 dev eth0 || true
+      - ip route add default via 10.10.${subnet_octet}.1 || true
       - chattr -i /etc/resolv.conf || true
       - echo "nameserver 1.1.1.1" > /etc/resolv.conf
       - chattr +i /etc/resolv.conf
@@ -105,10 +105,10 @@ let
     ethernets:
       eth0:
         addresses:
-          - 10.10.10.2/24
+          - 10.10.${subnet_octet}.2/24
         routes:
           - to: default
-            via: 10.10.10.1
+            via: 10.10.${subnet_octet}.1
         nameservers:
           addresses:
             - 1.1.1.1
@@ -129,7 +129,7 @@ in
   networking.bridges."br0".interfaces = [ ];
   networking.interfaces.br0.ipv4.addresses = [
     {
-      address = "10.10.10.1";
+      address = "10.10.${subnet_octet}.1";
       prefixLength = 24;
     }
   ];
@@ -150,7 +150,7 @@ in
     table ip nat {
       chain postrouting {
         type nat hook postrouting priority srcnat; policy accept;
-        ip saddr 10.10.10.0/24 oifname != "br0" masquerade
+        ip saddr 10.10.${subnet_octet}.0/24 oifname != "br0" masquerade
       }
     }
   '';
@@ -305,8 +305,11 @@ EOF
     };
   };
 
-  systemd.services."init-incus-${container_name}" = {
-    description = "Garante a existencia e execucao do container MicroK8s ${container_name}";
+  # 3 containers MicroK8s por host, cada um com IP dedicado no br0 (10.10.${subnet_octet}.2/3/4).
+  # O network-config e setado por instancia (incus init + config set + start) para
+  # evitar que os 3 containers herdem o mesmo IP estatico do profile "microk8s".
+  systemd.services."init-incus-${container_name}-1" = {
+    description = "Garante a existencia e execucao do container MicroK8s ${container_name}-1";
 
     after = [
       "incus.service"
@@ -328,17 +331,142 @@ EOF
     };
 
     script = ''
-      if ! $${pkgs.incus}/bin/incus info ${container_name} >/dev/null 2>&1; then
-        echo "Container ${container_name} nao encontrado. Criando de forma declarativa..."
-        $${pkgs.incus}/bin/incus launch images:ubuntu/26.04/cloud ${container_name} -p default -p microk8s
+      NAME="${container_name}-1"
+      IP="10.10.${subnet_octet}.2"
+      if ! $${pkgs.incus}/bin/incus info $NAME >/dev/null 2>&1; then
+        echo "Container $NAME nao encontrado. Criando de forma declarativa..."
+        $${pkgs.incus}/bin/incus init images:ubuntu/26.04/cloud $NAME -p default -p microk8s
+        $${pkgs.incus}/bin/incus config set $NAME user.network-config - <<'NETEOF'
+version: 2
+ethernets:
+  eth0:
+    addresses:
+      - 10.10.${subnet_octet}.2/24
+    routes:
+      - to: default
+        via: 10.10.${subnet_octet}.1
+    nameservers:
+      addresses:
+        - 1.1.1.1
+        - 8.8.8.8
+NETEOF
+        $${pkgs.incus}/bin/incus start $NAME
       else
-        echo "Container ${container_name} ja existe. Garantindo que ele esteja rodando..."
-        $${pkgs.incus}/bin/incus start ${container_name} || true
+        echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
+        $${pkgs.incus}/bin/incus start $NAME || true
       fi
       sleep 5
-      $${pkgs.incus}/bin/incus exec ${container_name} -- ip addr add 10.10.10.2/24 dev eth0 || true
-      $${pkgs.incus}/bin/incus exec ${container_name} -- ip route add default via 10.10.10.1 || true
-      $${pkgs.incus}/bin/incus exec ${container_name} -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
+      $${pkgs.incus}/bin/incus exec $NAME -- ip addr add $IP/24 dev eth0 || true
+      $${pkgs.incus}/bin/incus exec $NAME -- ip route add default via 10.10.${subnet_octet}.1 || true
+      $${pkgs.incus}/bin/incus exec $NAME -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
+    '';
+  };
+
+  systemd.services."init-incus-${container_name}-2" = {
+    description = "Garante a existencia e execucao do container MicroK8s ${container_name}-2";
+
+    after = [
+      "incus.service"
+      "incus-preseed.service"
+      "network-online.target"
+    ];
+    wants = [
+      "incus.service"
+      "incus-preseed.service"
+      "network-online.target"
+    ];
+    wantedBy = [ "multi-user.target" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = false;
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+
+    script = ''
+      NAME="${container_name}-2"
+      IP="10.10.${subnet_octet}.3"
+      if ! $${pkgs.incus}/bin/incus info $NAME >/dev/null 2>&1; then
+        echo "Container $NAME nao encontrado. Criando de forma declarativa..."
+        $${pkgs.incus}/bin/incus init images:ubuntu/26.04/cloud $NAME -p default -p microk8s
+        $${pkgs.incus}/bin/incus config set $NAME user.network-config - <<'NETEOF'
+version: 2
+ethernets:
+  eth0:
+    addresses:
+      - 10.10.${subnet_octet}.3/24
+    routes:
+      - to: default
+        via: 10.10.${subnet_octet}.1
+    nameservers:
+      addresses:
+        - 1.1.1.1
+        - 8.8.8.8
+NETEOF
+        $${pkgs.incus}/bin/incus start $NAME
+      else
+        echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
+        $${pkgs.incus}/bin/incus start $NAME || true
+      fi
+      sleep 5
+      $${pkgs.incus}/bin/incus exec $NAME -- ip addr add $IP/24 dev eth0 || true
+      $${pkgs.incus}/bin/incus exec $NAME -- ip route add default via 10.10.${subnet_octet}.1 || true
+      $${pkgs.incus}/bin/incus exec $NAME -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
+    '';
+  };
+
+  systemd.services."init-incus-${container_name}-3" = {
+    description = "Garante a existencia e execucao do container MicroK8s ${container_name}-3";
+
+    after = [
+      "incus.service"
+      "incus-preseed.service"
+      "network-online.target"
+    ];
+    wants = [
+      "incus.service"
+      "incus-preseed.service"
+      "network-online.target"
+    ];
+    wantedBy = [ "multi-user.target" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = false;
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+
+    script = ''
+      NAME="${container_name}-3"
+      IP="10.10.${subnet_octet}.4"
+      if ! $${pkgs.incus}/bin/incus info $NAME >/dev/null 2>&1; then
+        echo "Container $NAME nao encontrado. Criando de forma declarativa..."
+        $${pkgs.incus}/bin/incus init images:ubuntu/26.04/cloud $NAME -p default -p microk8s
+        $${pkgs.incus}/bin/incus config set $NAME user.network-config - <<'NETEOF'
+version: 2
+ethernets:
+  eth0:
+    addresses:
+      - 10.10.${subnet_octet}.4/24
+    routes:
+      - to: default
+        via: 10.10.${subnet_octet}.1
+    nameservers:
+      addresses:
+        - 1.1.1.1
+        - 8.8.8.8
+NETEOF
+        $${pkgs.incus}/bin/incus start $NAME
+      else
+        echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
+        $${pkgs.incus}/bin/incus start $NAME || true
+      fi
+      sleep 5
+      $${pkgs.incus}/bin/incus exec $NAME -- ip addr add $IP/24 dev eth0 || true
+      $${pkgs.incus}/bin/incus exec $NAME -- ip route add default via 10.10.${subnet_octet}.1 || true
+      $${pkgs.incus}/bin/incus exec $NAME -- bash -c 'chattr -i /etc/resolv.conf 2>/dev/null; echo nameserver 1.1.1.1 > /etc/resolv.conf; chattr +i /etc/resolv.conf' || true
     '';
   };
 
