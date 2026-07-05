@@ -39,7 +39,6 @@ locals {
       enable-oslogin         = var.enable_oslogin ? "TRUE" : "FALSE"
       block-project-ssh-keys = "TRUE"
       serial-port-enable     = "TRUE"
-      enable-oslogin = "TRUE"
 
       # Spot pode ser preemptada. Este script apenas deixa rastro no journal/serial console.
       # A persistencia real deve estar no NixOS/servicos, nao no Terraform.
@@ -72,8 +71,12 @@ resource "google_os_login_ssh_public_key" "current_user" {
     for idx, key in local.ssh_public_keys : tostring(idx) => key
   } : {}
 
-  user = data.google_client_openid_userinfo.me[0].email
-  key  = each.value
+  user    = data.google_client_openid_userinfo.me[0].email
+  key     = each.value
+  project = var.project_id
+
+  # The OS Login API rejects concurrent mutations, so keys must be created
+  # sequentially. Run apply with: tofu apply -parallelism=1
 }
 
 resource "google_compute_network" "nixos" {
@@ -120,13 +123,16 @@ resource "google_compute_firewall" "allow_icmp" {
 }
 
 resource "google_compute_address" "nixos" {
-  count  = var.assign_public_ip && var.reserve_static_ip ? 1 : 0
-  name   = "${var.name}-ip"
-  region = var.region
+  count        = var.assign_public_ip && var.reserve_static_ip ? var.node_count : 0
+  name         = "${var.name}${count.index}-ip"
+  region       = var.region
+  network_tier = var.network_tier
 }
 
+# count=3 cria gcnix0, gcnix1, gcnix2 assim como fizemos na AWS.
 resource "google_compute_instance" "nixos" {
-  name         = var.name
+  count        = var.node_count
+  name         = "${var.name}${count.index}"
   machine_type = var.machine_type
   zone         = var.zone
 
@@ -153,7 +159,7 @@ resource "google_compute_instance" "nixos" {
     dynamic "access_config" {
       for_each = var.assign_public_ip ? [1] : []
       content {
-        nat_ip       = var.reserve_static_ip ? google_compute_address.nixos[0].address : null
+        nat_ip       = var.reserve_static_ip ? google_compute_address.nixos[count.index].address : null
         network_tier = var.network_tier
       }
     }
@@ -167,13 +173,13 @@ resource "google_compute_instance" "nixos" {
     instance_termination_action = var.spot_termination_action
   }
 
-  shielded_instance_config {
-    # Imagem NixOS custom com kernel recente pode nao estar assinada para Secure Boot.
-    # Deixe false ate validar a imagem; vTPM/integrity continuam ligados por padrao.
-    enable_secure_boot          = var.enable_secure_boot
-    enable_vtpm                 = true
-    enable_integrity_monitoring = true
-  }
+  # shielded_instance_config requer imagem UEFI-compatible (GPT + ESP).
+  # Imagem NixOS custom atual usa BIOS/MBR, entao desabilitado por ora.
+  # shielded_instance_config {
+  #   enable_secure_boot          = var.enable_secure_boot
+  #   enable_vtpm                 = true
+  #   enable_integ  rity_monitoring = true
+  # }
 
   metadata = local.instance_metadata
 
@@ -200,22 +206,25 @@ resource "google_compute_instance" "nixos" {
   ]
 }
 
-output "instance_name" {
-  value = google_compute_instance.nixos.name
+output "instance_names" {
+  value = google_compute_instance.nixos[*].name
 }
 
 output "zone" {
-  value = google_compute_instance.nixos.zone
+  value = var.zone
 }
 
-output "public_ip" {
-  value = try(google_compute_instance.nixos.network_interface[0].access_config[0].nat_ip, null)
+output "public_ips" {
+  value = [for inst in google_compute_instance.nixos : try(inst.network_interface[0].access_config[0].nat_ip, null)]
 }
 
-output "internal_ip" {
-  value = google_compute_instance.nixos.network_interface[0].network_ip
+output "internal_ips" {
+  value = google_compute_instance.nixos[*].network_interface[0].network_ip
 }
 
-output "ssh_hint" {
-  value = var.enable_oslogin ? "gcloud compute ssh ${google_compute_instance.nixos.name} --zone ${var.zone}" : "ssh -p ${var.ssh_port} ${var.ssh_user}@${try(google_compute_instance.nixos.network_interface[0].access_config[0].nat_ip, google_compute_instance.nixos.network_interface[0].network_ip)}"
+output "ssh_hints" {
+  value = [
+    for inst in google_compute_instance.nixos :
+    var.enable_oslogin ? "gcloud compute ssh ${inst.name} --zone ${var.zone} --ssh-flag='-p ${var.ssh_port}'" : "ssh -p ${var.ssh_port} ${var.ssh_user}@${try(inst.network_interface[0].access_config[0].nat_ip, inst.network_interface[0].network_ip)}"
+  ]
 }
