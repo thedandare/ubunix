@@ -32,6 +32,24 @@ locals {
   nixos_image_project = var.nixos_image_project != "" ? var.nixos_image_project : var.project_id
   nixos_source_image  = var.nixos_image_self_link != "" ? var.nixos_image_self_link : data.google_compute_image.nixos[0].self_link
 
+  first_boot_marker = "/var/lib/gce-first-boot-done"
+
+  # O guest-agent do GCE roda startup-script em TODO boot, entao usamos um
+  # marker file para garantir que o comando rode apenas uma vez (primeira inicializacao).
+  first_boot_startup_script = var.first_boot_script == "" ? null : <<-SCRIPT
+    #!/usr/bin/env bash
+    set -euo pipefail
+    MARKER="${local.first_boot_marker}"
+    if [ -f "$MARKER" ]; then
+      exit 0
+    fi
+    mkdir -p "$(dirname "$MARKER")"
+    {
+    ${var.first_boot_script}
+    } | systemd-cat -t gce-first-boot
+    touch "$MARKER"
+  SCRIPT
+
   instance_metadata = merge(
     {
       # A imagem NixOS para GCE recente espera OS Login para acesso via console/gcloud.
@@ -50,6 +68,7 @@ locals {
       SCRIPT
     },
     var.enable_oslogin ? {} : { ssh-keys = local.metadata_ssh_keys },
+    var.first_boot_script == "" ? {} : { startup-script = local.first_boot_startup_script },
     var.extra_metadata
   )
 }
