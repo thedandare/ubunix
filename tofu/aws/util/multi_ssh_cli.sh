@@ -28,14 +28,30 @@ runpane() {
   fi
 }
 
+# "ssh -p 2409 root@13.59.222.123 # amnix0s",
+#   "ssh -p 2409 root@3.131.85.58 # amnix1s",
+#   "ssh -p 2409 root@18.222.183.252 # amnix2s",
+
 if [[ $# -gt 0 ]]; then
-  runpane "$P0" "amnix0s" "18.228.117.205" "$@"
-  runpane "$P1" "amnix1s" "54.20.45.195" "$@"
-  runpane "$P2" "amnix2s" "54.20.64.51" "$@"
+  runpane "$P0" "amnix0s" "13.59.222.123" "$@"
+  runpane "$P1" "amnix1s" "3.131.85.58 " "$@"
+  runpane "$P2" "amnix2s" "18.222.183.252" "$@"
 else
-  runpane "$P0" "amnix0s" "18.228.117.205"
-  runpane "$P1" "amnix1s" "54.20.45.195"
-  runpane "$P2" "amnix2s" "54.20.64.51"
+  runpane "$P0" "amnix0s" "13.59.222.123"
+  runpane "$P1" "amnix1s" "3.131.85.58 "
+  runpane "$P2" "amnix2s" "18.222.183.252"
 fi
+
+
+# if [[ $# -gt 0 ]]; then
+#   runpane "$P0" "amnix0s" "18.228.117.205" "$@"
+#   runpane "$P1" "amnix1s" "54.20.45.195" "$@"
+#   runpane "$P2" "amnix2s" "54.20.64.51" "$@"
+# else
+#   runpane "$P0" "amnix0s" "18.228.117.205"
+#   runpane "$P1" "amnix1s" "54.20.45.195"
+#   runpane "$P2" "amnix2s" "54.20.64.51"
+# fi
+
 
 tmux attach -t "$SESSION"

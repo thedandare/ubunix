@@ -19,7 +19,6 @@
 # Para voltar a infra atual (default/sa-east-1):
 #   tofu workspace select default
 
-set -euo pipefail
 
 BRANCH_NAME="${1:-aws-us-east-2}"
 WORKSPACE_NAME="us-east-2"
