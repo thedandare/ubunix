@@ -1,9 +1,0 @@
- {
-  inputs.erosanix.url = "github:emmanuelrosa/erosanix";
-
-  ouputs = { self, nixpkgs, erosanix, ...}: {
-    nixosConfigurations.blah = nixpkgs.lib.nixosSystem {
-      modules = [ erosanix.nixosModules.foobar ./configuration.nix ];
-    };
-  };
-};
