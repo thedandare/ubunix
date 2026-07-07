@@ -2,8 +2,8 @@
 set -euo pipefail
 
 SESSION="gcnix"
-ZONE="southamerica-east1-a"
-SSH_PORT=2409
+ZONE_BASE="southamerica-east1"
+SSH_PORT=22
 
 tmux kill-session -t "$SESSION" 2>/dev/null || true
 tmux new-session -d -s "$SESSION" -n nodes
@@ -17,6 +17,9 @@ tmux select-layout -t "$SESSION:nodes" even-horizontal
 runpane() {
   local pane="$1"
   local name="$2"
+  local idx="${name: -1}"
+  local zone_letters=(a b c)
+  local ZONE="${ZONE_BASE}-${zone_letters[$idx]}"
 
   if [[ $# -ge 3 ]]; then
     shift 2
