@@ -4,16 +4,16 @@
 cat << 'EOF' > nix-config.yaml
 #cloud-config
 apt_update: true
-apt_upgrade: true
+#  apt_upgrade: true
 
 packages:
   - curl
   - git
   - xz-utils
-  - kubelet
-  - kubeadm
-  - kubectl
-  - flannel
+  # - kubelet
+  # - kubeadm
+  # - kubectl
+  # - flannel
 
 runcmd:
   - echo -e "\033[7;34m # 1. Cria diretório do Nix com permissões corretas  \033[0m]"
