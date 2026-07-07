@@ -30,7 +30,7 @@ GIT_CHANGES=$(git diff --cached | head -c 4000 | sed 's/\\/\\\\/g; s/"/\\"/g; s/
 JSON_PAYLOAD=$(cat <<EOF
 {
   "model": "gpt-4o-mini",
-  "input": "Escreva uma mensagem de commit curta, concisa, no imperativo e em português para este diff do Git. Não use markdown, saudações ou jargões de permissão de arquivo (como 100644). Apenas a mensagem direta. Diff:\\n\\n$GIT_CHANGES",
+  "input": "Escreva uma mensagem de commit curta, concisa, usando o padrão conventionalcommits.org/en e em português para este diff do Git. Não use markdown, saudações ou jargões de permissão de arquivo (como 100644). Apenas a mensagem direta. Diff:\\n\\n$GIT_CHANGES",
   "store": false
 }
 EOF
