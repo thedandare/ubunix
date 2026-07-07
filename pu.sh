@@ -5,7 +5,7 @@ export GIT_SSH_COMMAND="ssh -i ~/.ssh/tdd_id_ed25519"
 OPENAI_API_KEY=$(cat leonix/secret/openai_key 2>/dev/null || cat thumbnix/secret/openai_key 2>/dev/null)
 
 # Garante que o remote origin está correto
-git remote set-url origin git@github.com:thedandare/ubunit.gix 2>/dev/null || git remote add origin git@github.com:thedandare/ubunit.gix
+git remote set-url origin git@github.com:thedandare/ubunix.git 2>/dev/null || git remote add origin git@github.com:thedandare/ubunix.git
 
 # 2. Adiciona os arquivos na fila
 if [ -n "$1" ]; then
@@ -60,6 +60,6 @@ echo "📝 Mensagem gerada: \"$IA_COMMIT_MSG\""
 
 # 5. Executa o Commit e faz o Push
 git commit -m "$IA_COMMIT_MSG"
-#git push -u origin main
-git push --set-upstream git@github.com:thedandare/ubunix.git main
+git push -u origin main
+
 
