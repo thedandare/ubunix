@@ -15,7 +15,15 @@ provider "google" {
   zone    = var.zone
 }
 
+data "google_compute_zones" "available" {
+  region = var.region
+  status = "UP"
+}
+
 locals {
+  # Zonas disponiveis na regiao. Se a API nao retornar nada, usa var.zone como fallback.
+  zones = length(data.google_compute_zones.available.names) > 0 ? data.google_compute_zones.available.names : [var.zone]
+
   # Junta chaves publicas lidas de arquivos locais com chaves literais opcionais.
   ssh_public_keys = compact(concat(
     [for p in var.ssh_public_key_files : try(trimspace(file(p)), "")],
@@ -32,6 +40,12 @@ locals {
   nixos_image_project = var.nixos_image_project != "" ? var.nixos_image_project : var.project_id
   nixos_source_image  = var.nixos_image_self_link != "" ? var.nixos_image_self_link : data.google_compute_image.nixos[0].self_link
 
+  # Pre-formata as chaves SSH como lista YAML para o cloud-init template.
+  ssh_authorized_keys_yaml = join("\n      - ", [
+    for key in local.ssh_public_keys : "\"${key}\""
+  ])
+
+  
   first_boot_marker = "/var/lib/gce-first-boot-done"
 
   # O guest-agent do GCE roda startup-script em TODO boot, entao usamos um
@@ -82,7 +96,7 @@ data "google_compute_image" "nixos" {
 # Opcional, mas conveniente: registra suas chaves locais no OS Login do usuario autenticado
 # pelo Application Default Credentials. So roda se enable_oslogin=true e manage_oslogin_keys=true.
 data "google_client_openid_userinfo" "me" {
-  count = var.enable_oslogin && var.manage_oslogin_keys ? 1 : 0
+  count = 3 #var.enable_oslogin && var.manage_oslogin_keys ? 1 : 0
 }
 
 resource "google_os_login_ssh_public_key" "current_user" {
@@ -148,12 +162,12 @@ resource "google_compute_address" "nixos" {
   network_tier = var.network_tier
 }
 
-# count=3 cria gcnix0, gcnix1, gcnix2 assim como fizemos na AWS.
+# count=3 cria gcnix0, gcnix1, gcnix2 distribuidos pelas zonas de local.zones.
 resource "google_compute_instance" "nixos" {
   count        = var.node_count
   name         = "${var.name}${count.index}"
   machine_type = var.machine_type
-  zone         = var.zone
+  zone         = element(local.zones, count.index)
 
   tags = [local.network_tag]
 
@@ -200,7 +214,19 @@ resource "google_compute_instance" "nixos" {
   #   enable_integ  rity_monitoring = true
   # }
 
-  metadata = local.instance_metadata
+  metadata = merge(
+    local.instance_metadata,
+    {
+      user-data = templatefile("${path.module}/user_data.cloud-config.tftpl", {
+        ssh_authorized_keys_yaml = local.ssh_authorized_keys_yaml
+        tailscale_auth_key       = var.tailscale_auth_key
+        netbird_setup_key        = var.netbird_setup_key
+        ssh_port                 = var.ssh_port
+        node_index               = count.index
+        hostname_suffix          = substr(uuid(), 0, 8)
+      })
+    }
+  )
 
   dynamic "service_account" {
     for_each = var.service_account_email == "" ? [] : [1]
@@ -215,13 +241,12 @@ resource "google_compute_instance" "nixos" {
   lifecycle {
     precondition {
       condition     = var.nixos_image_self_link != "" || var.nixos_image_family != ""
-      error_message = "Informe nixos_image_self_link ou nixos_image_family/nixos_image_project para achar a imagem NixOS custom no GCE."
+      error_message = "Informe nixos_image_self_link ou nixos_image_family/nixos_image_project para achar a imagem no GCE."
     }
   }
 
   depends_on = [
     google_compute_firewall.allow_ssh,
-    google_os_login_ssh_public_key.current_user
   ]
 }
 
@@ -229,8 +254,8 @@ output "instance_names" {
   value = google_compute_instance.nixos[*].name
 }
 
-output "zone" {
-  value = var.zone
+output "zones" {
+  value = google_compute_instance.nixos[*].zone
 }
 
 output "public_ips" {

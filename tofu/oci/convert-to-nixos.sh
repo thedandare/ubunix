@@ -2,22 +2,68 @@
 set -euo pipefail
 
 # Script para converter instância OCI Ubuntu para NixOS usando nixos-anywhere
-# Uso: ./convert-to-nixos.sh <IP_PUBLICO> [NIXOS_CONFIG]
+# Uso: ./convert-to-nixos.sh [--port PORT] [--post-kexec-port PORT] [--user USER] [--yes] <IP_PUBLICO> [NIXOS_CONFIG] [SSH_KEY]
 
-INSTANCE_IP="${1:-}"
-NIXOS_CONFIG="${2:-$(dirname "$0")/nixos-config.nix}"
-SSH_KEY="${3:-/root/.ssh/root_id_ed25519}"
+INSTANCE_IP=""
+NIXOS_CONFIG="$(dirname "$0")/nixos-config.nix"
+SSH_KEY="/root/.ssh/root_id_ed25519"
+SSH_PORT="${SSH_PORT:-22}"
+POST_KEXEC_PORT="${POST_KEXEC_PORT:-22}"
+SSH_USER="${SSH_USER:-ubuntu}"
 AUTO_APPROVE="${AUTO_APPROVE:-}"
 
-# Parse de flag --yes
-if [ "${1:-}" = "--yes" ] || [ "${1:-}" = "-y" ]; then
-  INSTANCE_IP="${2:-}"
-  AUTO_APPROVE="1"
-fi
+# Parse de argumentos
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --yes|-y)
+      AUTO_APPROVE="1"
+      shift
+      ;;
+    --port|-p)
+      SSH_PORT="${2:?porta não especificada}"
+      shift 2
+      ;;
+    --port=*)
+      SSH_PORT="${1#*=}"
+      shift
+      ;;
+    --user|-u)
+      SSH_USER="${2:?usuário não especificado}"
+      shift 2
+      ;;
+    --user=*)
+      SSH_USER="${1#*=}"
+      shift
+      ;;
+    --post-kexec-port)
+      POST_KEXEC_PORT="${2:?porta pós-kexec não especificada}"
+      shift 2
+      ;;
+    --post-kexec-port=*)
+      POST_KEXEC_PORT="${1#*=}"
+      shift
+      ;;
+    *)
+      if [ -z "$INSTANCE_IP" ]; then
+        INSTANCE_IP="$1"
+      elif [ "$NIXOS_CONFIG" = "$(dirname "$0")/nixos-config.nix" ]; then
+        NIXOS_CONFIG="$1"
+      elif [ "$SSH_KEY" = "/root/.ssh/root_id_ed25519" ]; then
+        SSH_KEY="$1"
+      else
+        echo "Erro: argumento desconhecido: $1"
+        exit 1
+      fi
+      shift
+      ;;
+  esac
+done
 
 if [ -z "$INSTANCE_IP" ]; then
-  echo "Uso: $0 [--yes] <IP_PUBLICO> [NIXOS_CONFIG] [SSH_KEY]"
+  echo "Uso: $0 [--port PORT] [--post-kexec-port PORT] [--user USER] [--yes] <IP_PUBLICO> [NIXOS_CONFIG] [SSH_KEY]"
   echo "Exemplo: $0 203.0.113.10"
+  echo "Exemplo com porta: $0 --port 2222 203.0.113.10"
+  echo "Exemplo com usuário: $0 --user myuser 203.0.113.10"
   echo "Exemplo nao interativo: AUTO_APPROVE=1 $0 203.0.113.10"
   exit 1
 fi
@@ -29,6 +75,9 @@ fi
 
 echo "=== Convertendo instância OCI para NixOS ==="
 echo "IP: $INSTANCE_IP"
+echo "Porta SSH: $SSH_PORT"
+echo "Porta pós-kexec: $POST_KEXEC_PORT"
+echo "Usuário SSH: $SSH_USER"
 echo "Config: $NIXOS_CONFIG"
 echo ""
 
@@ -38,13 +87,13 @@ if ! command -v nixos-anywhere &> /dev/null; then
   nix-shell -p nixos-anywhere --run "echo 'nixos-anywhere instalado'"
 fi
 
-# Testar conexão SSH como ubuntu
+# Testar conexão SSH
 echo "Testando conexão SSH com chave $SSH_KEY..."
-ssh-keyscan -H "$INSTANCE_IP" >> ~/.ssh/known_hosts 2>/dev/null || true
+ssh-keyscan -p "$SSH_PORT" -H "$INSTANCE_IP" >> ~/.ssh/known_hosts 2>/dev/null || true
 
-if ! ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i $SSH_KEY "root@$INSTANCE_IP" echo "SSH OK"; then
-  echo "Erro: Não foi possível conectar via SSH como root"
-  echo "Dica: certifique-se de que o usuário root tem a chave SSH autorizada"
+if ! ssh -p "$SSH_PORT" -o StrictHostKeyChecking=no -o ConnectTimeout=10 -i $SSH_KEY "$SSH_USER@$INSTANCE_IP" echo "SSH OK"; then
+  echo "Erro: Não foi possível conectar via SSH como $SSH_USER"
+  echo "Dica: certifique-se de que o usuário $SSH_USER tem a chave SSH autorizada"
   exit 1
 fi
 
@@ -93,7 +142,9 @@ if [ "$(id -u)" -eq 0 ] && [ "$FLAKE_OWNER" != "root" ]; then
       --flake '.#ocinix' \
       --impure \
       --extra-files '$TMP_EXTRA' \
-      --target-host 'root@$INSTANCE_IP' \
+      --ssh-port '$SSH_PORT' \
+      --post-kexec-ssh-port '$POST_KEXEC_PORT' \
+      --target-host '$SSH_USER@$INSTANCE_IP' \
       -i '$TMP_KEY'
   "
   rm -rf "$TMP_EXTRA"
@@ -107,7 +158,9 @@ else
     --flake ".#ocinix" \
     --impure \
     --extra-files "$TMP_EXTRA" \
-    --target-host "root@$INSTANCE_IP" \
+    --ssh-port "$SSH_PORT" \
+    --post-kexec-ssh-port "$POST_KEXEC_PORT" \
+    --target-host "$SSH_USER@$INSTANCE_IP" \
     -i "$SSH_KEY"
   rm -rf "$TMP_EXTRA"
 fi
@@ -115,4 +168,8 @@ fi
 echo ""
 echo "=== Conversão concluída ==="
 echo "A instância será reiniciada com NixOS"
-echo "Após reiniciar, conecte com: ssh ubuntu@$INSTANCE_IP"
+if [ "$SSH_PORT" -ne 22 ]; then
+  echo "Após reiniciar, conecte com: ssh -p $SSH_PORT $SSH_USER@$INSTANCE_IP"
+else
+  echo "Após reiniciar, conecte com: ssh $SSH_USER@$INSTANCE_IP"
+fi

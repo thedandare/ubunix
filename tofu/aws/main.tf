@@ -98,6 +98,19 @@ resource "aws_instance" "nixos_x86_64" {
     volume_type = "gp3"
   }
 
+  dynamic "instance_market_options" {
+    for_each = var.enable_spot_instances ? [1] : []
+    content {
+      market_type = "spot"
+
+      spot_options {
+        max_price                     = var.spot_max_price != "" ? var.spot_max_price : null
+        spot_instance_type            = "one-time"
+        instance_interruption_behavior = var.spot_instance_interruption_behavior
+      }
+    }
+  }
+
   tags = {
     Name = "amnix${count.index}s"
   }
@@ -110,6 +123,7 @@ resource "aws_instance" "nixos_x86_64" {
     tailscale_script_b64    = filebase64("${path.module}/../../../nixos/leonix/virtualisation/init_tailscale.sh")
     container_name          = "amnix${count.index}s"
     subnet_octet            = tostring(11 + count.index)
+    node_index              = count.index
   })
   user_data_replace_on_change = true
 }

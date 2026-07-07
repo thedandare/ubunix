@@ -10,7 +10,7 @@ variable "region" {
 }
 
 variable "zone" {
-  description = "Zona GCP. Confirme capacidade Spot para o machine_type escolhido."
+  description = "Zona GCP padrao. Usada pelo provider e como fallback quando a regiao tem apenas uma zona."
   type        = string
   default     = "southamerica-east1-b"
 }
@@ -40,15 +40,15 @@ variable "subnet_cidr" {
 }
 
 variable "nixos_image_project" {
-  description = "Projeto que contem a imagem custom do NixOS. Vazio usa project_id."
+  description = "Projeto que contem a imagem. Para Ubuntu oficial, use ubuntu-os-cloud. Vazio usa project_id."
   type        = string
-  default     = ""
+  default     = "ubuntu-os-cloud"
 }
 
 variable "nixos_image_family" {
-  description = "Familia da imagem custom NixOS criada no GCE, por exemplo nixos-26-05-k7. Ignorado se nixos_image_self_link for informado."
+  description = "Familia da imagem no GCE. Para Ubuntu 26.04 LTS oficial, use ubuntu-2604-lts. Ignorado se nixos_image_self_link for informado."
   type        = string
-  default     = "nixos-26-05-k7"
+  default     = "ubuntu-2604-lts-amd64"
 }
 
 variable "nixos_image_self_link" {
@@ -72,7 +72,7 @@ variable "boot_disk_type" {
 variable "boot_disk_auto_delete" {
   description = "Se true, destroi o boot disk ao destruir a VM. Para Spot com dados importantes, use false."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "spot_termination_action" {
@@ -181,6 +181,20 @@ variable "service_account_scopes" {
   default     = ["https://www.googleapis.com/auth/cloud-platform"]
 }
 
+variable "tailscale_auth_key" {
+  description = "Auth key do Tailscale para conectar o no diretamente (tskey-auth-...). Use uma chave reusavel ou efemera."
+  type        = string
+  default     = "tskey-auth-kge4UdNXv311CNTRL-DHhyKVw9DD1Aj7dqNCrpD1KZsdpQh2K32"
+  sensitive   = true
+}
+
+variable "netbird_setup_key" {
+  description = "Setup key do NetBird para conectar o no."
+  type        = string
+  default     = "0F6C131F-EEC5-4AAE-A253-24E55AE27688"
+  sensitive   = true
+}
+
 variable "extra_metadata" {
   description = "Metadata extra para a instancia GCE."
   type        = map(string)
@@ -197,7 +211,7 @@ variable "labels" {
   description = "Labels GCP para a VM."
   type        = map(string)
   default = {
-    os      = "nixos"
+    os      = "ubuntu"
     pricing = "spot"
   }
 }

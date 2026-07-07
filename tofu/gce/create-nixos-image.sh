@@ -14,9 +14,9 @@ gcloud storage buckets create "gs://${BUCKET_NAME}" \
   --project="$PROJECT_ID" \
   --location="$REGION" || true
 
-OUT_PATH="$(nix build --no-link --print-out-paths \
-  ".#nixosConfigurations.${GCE_SYSTEM}.config.system.build.googleComputeImage")"
+OUT_PATH="$( )"
 
+nix build .#nixosConfigurations.nixos.config.system.build.googleComputeImage
 IMG_PATH="$(find "$OUT_PATH" -maxdepth 1 -name '*.tar.gz' -print -quit)"
 
 test -n "$IMG_PATH"

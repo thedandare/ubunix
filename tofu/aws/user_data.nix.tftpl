@@ -114,7 +114,7 @@ in
 {
   imports = [ <nixpkgs/nixos/modules/virtualisation/amazon-image.nix> ];
 
-  networking.hostName = "amnix";
+  networking.hostName = "amnix-${toString node_index}";
   networking.nftables.enable = true;
 
   boot.kernel.sysctl."net.ipv4.ip_forward" = 1;

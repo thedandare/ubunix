@@ -1,0 +1,22 @@
+[Unit]
+Description=Spot Instance Termination Handler — detecta interrupção AWS Spot e executa limpeza
+Documentation=https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/spot-instance-termination-notices.html
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/spot-termination-handler.sh
+Restart=always
+RestartSec=10
+Environment=POLL_INTERVAL=5
+Environment=HOOK_TIMEOUT=30
+Environment=SHUTDOWN_HOOK_DIR=/etc/spot-termination-hooks.d
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=false
+
+[Install]
+WantedBy=multi-user.target

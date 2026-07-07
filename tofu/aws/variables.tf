@@ -91,3 +91,20 @@ variable "enable_bootstrap_switch" {
   type    = bool
   default = true
 }
+
+variable "enable_spot_instances" {
+  type    = bool
+  default = true
+}
+
+# Vazio ("") = usa o preco on-demand atual como teto (comportamento padrao da AWS).
+variable "spot_max_price" {
+  type    = string
+  default = ""
+}
+
+# "terminate" (padrao), "stop" ou "hibernate".
+variable "spot_instance_interruption_behavior" {
+  type    = string
+  default = "terminate"
+}
