@@ -1,9 +1,6 @@
 #!/bin/sh
 
-# 1. Configurações Iniciais
-export GIT_SSH_COMMAND="ssh -i ~/.ssh/tdd_id_ed25519"
-OPENAI_API_KEY=$(cat leonix/secret/openai_key 2>/dev/null || cat thumbnix/secret/openai_key 2>/dev/null)
-
+#
 # Garante que o remote origin está correto
 git remote set-url origin git@github.com:thedandare/ubunix.git 2>/dev/null || git remote add origin git@github.com:thedandare/ubunix.git
 
