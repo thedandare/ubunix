@@ -1,0 +1,37 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: HelmRepository
+metadata:
+  name: openobserve
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://charts.openobserve.ai
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: openobserve
+  namespace: monitoring
+spec:
+  releaseName: openobserve
+  chart:
+    spec:
+      chart: openobserve
+      sourceRef:
+        kind: HelmRepository
+        name: openobserve
+        namespace: flux-system
+  interval: 1h
+  install:
+    createNamespace: true
+  values:
+    postgres:
+      enabled: false
+    config:
+      ZO_META_STORE: sqlite
+    singleNode:
+      enabled: true
+    persistence:
+      enabled: true
+      storageClass: efs-sc
+      size: 10Gi

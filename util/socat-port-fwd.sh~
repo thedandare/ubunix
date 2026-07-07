@@ -1,2 +1,0 @@
-#!/bin/zsh
-socat TCP4-LISTEN:81,fork,reuseaddr TCP4:TCP4:192.168.0.15:80

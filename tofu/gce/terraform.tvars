@@ -1,0 +1,11 @@
+project_id         = "project-1ab07399-29ab-4352-8f8"
+region             = "southamerica-east1"
+zone               = "southamerica-east1-c"
+instance_name      = "nixos-gce-spot-0"
+manage_oslogin_keys = false
+machine_type       = "e2-small"
+nixos_image_family = "ubuntu-2604-lts-amd64"
+ssh_port           = 2409
+node_count         = 3
+boot_disk_size_gb = 25
+first_boot_script = ""

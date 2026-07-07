@@ -1,0 +1,51 @@
+{
+    "IamFleetRole": "arn:aws:iam::908402822601:role/aws-ec2-spot-fleet-tagging-role",
+    "AllocationStrategy": "priceCapacityOptimized",
+    "TargetCapacity": 5,
+    "ValidFrom": "2026-07-05T07:43:29.000Z",
+    "ValidUntil": "2027-07-05T07:43:29.000Z",
+    "TerminateInstancesWithExpiration": true,
+    "Type": "maintain",
+    "TargetCapacityUnitType": "units",
+    "LaunchSpecifications": [
+        {
+            "ImageId": "ami-0f9d413720d0c23a3",
+            "KeyName": "nixos-opentofu-incus-v3-key",
+            "BlockDeviceMappings": [
+                {
+                    "DeviceName": "/dev/xvda",
+                    "Ebs": {
+                        "DeleteOnTermination": false,
+                        "Iops": 16000,
+                        "SnapshotId": "snap-01b4448532f13c354",
+                        "VolumeSize": 125,
+                        "VolumeType": "gp3",
+                        "Encrypted": false,
+                        "Throughput": 125
+                    }
+                }
+            ],
+            "IamInstanceProfile": {
+                "Arn": "arn:aws:iam::908402822601:instance-profile/instanceRole"
+            },
+            "SubnetId": "subnet-0218caf4d47c5c4cd, subnet-0e19d9df7aacadf42, subnet-07c0aaa19f58b255d",
+            "SecurityGroups": [
+                {
+                    "GroupId": "sg-074bdf7eb7e155c0c"
+                }
+            ],
+            "InstanceRequirements": {
+                "ExcludedInstanceTypes": [],
+                "AllowedInstanceTypes": [],
+                "VCpuCount": {
+                    "Min": 1,
+                    "Max": 1
+                },
+                "MemoryMiB": {
+                    "Min": 4096,
+                    "Max": 4096
+                }
+            }
+        }
+    ]
+}

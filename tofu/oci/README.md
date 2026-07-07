@@ -1,0 +1,1 @@
+[Atuin Hub](https://hub.atuin.sh/thedandare/019f1f97-d380-7a93-9497-ee6c000d3092)
