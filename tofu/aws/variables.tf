@@ -1,11 +1,11 @@
 variable "aws_region" {
   type    = string
-  default = "sa-east-1"
+  default = "us-east-2"
 }
 
 variable "node_count" {
   type    = number
-  default = 1
+  default = 2
 }
 
 variable "name" {
@@ -25,12 +25,12 @@ variable "nixos_ami_name_filter" {
 
 variable "instance_type" {
   type    = string
-  default = "t3.small"
+  default = "t3a.medium"
 }
 
 variable "root_volume_size" {
   type    = number
-  default = 40
+  default = 30
 }
 
 variable "ssh_port" {
@@ -104,7 +104,9 @@ variable "spot_max_price" {
 }
 
 # "terminate" (padrao), "stop" ou "hibernate".
+# "stop" preserva o disco quando a instancia e preemptada (recomendado).
+# "terminate" apaga a instancia e o disco (nao recomendado para dados importantes).
 variable "spot_instance_interruption_behavior" {
   type    = string
-  default = "terminate"
+  default = "stop"
 }
