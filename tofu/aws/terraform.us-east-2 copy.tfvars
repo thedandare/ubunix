@@ -6,7 +6,7 @@ aws_region = "us-east-2"
 instance_type = "t3.small"
 root_volume_size = 40
 ssh_port = 2409
-node_count = 3
+node_count = 1
 
 # Para restringir ao seu IP depois:
 # ssh_cidr_blocks = ["SEU_IP/32"]

@@ -105,7 +105,7 @@ resource "aws_instance" "nixos_x86_64" {
 
       spot_options {
         max_price                     = var.spot_max_price != "" ? var.spot_max_price : null
-        spot_instance_type            = "one-time"
+        spot_instance_type            = "persistent"
         instance_interruption_behavior = var.spot_instance_interruption_behavior
       }
     }
@@ -115,16 +115,11 @@ resource "aws_instance" "nixos_x86_64" {
     Name = "amnix${count.index}s"
   }
 
-  user_data = templatefile("${path.module}/user_data.nix.tftpl", {
-    ssh_port                = var.ssh_port
-    ssh_public_keys_nix     = local.ssh_public_keys_nix
-    tailscale_client_id     = var.tailscale_client_id
-    tailscale_client_secret = var.tailscale_client_secret
-    tailscale_script_b64    = filebase64("${path.module}/../../../nixos/leonix/virtualisation/init_tailscale.sh")
-    container_name          = "amnix${count.index}s"
-    subnet_octet            = tostring(11 + count.index)
-    node_index              = count.index
-  })
+  user_data = base64encode(templatefile("${path.module}/user_data.nix.tftpl", {
+    ssh_port            = var.ssh_port
+    ssh_public_keys_nix = local.ssh_public_keys_nix
+    container_name      = "amnix"
+  }))
   user_data_replace_on_change = true
 }
 
