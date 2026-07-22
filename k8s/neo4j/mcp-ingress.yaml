@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: neo4j-mcp-ingress
+  namespace: neo4j
+  annotations:
+    kubernetes.io/ingress.class: public
+spec:
+  rules:
+  - host: mcp.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: neo4j-mcp
+            port:
+              number: 8080

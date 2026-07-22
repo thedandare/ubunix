@@ -31,6 +31,52 @@ let
           net.bridge.bridge-nf-call-iptables = 1
           net.bridge.bridge-nf-call-ip6tables = 1
 
+      # Correção confirmada manualmente neste ambiente:
+      # faz o caminho usado pelo MicroK8s executar iptables-nft.
+      - path: /usr/local/sbin/microk8s-bind-iptables-nft
+        permissions: '0755'
+        owner: root:root
+        content: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          SOURCE=/snap/microk8s/current/sbin/iptables-nft
+          TARGET=/snap/microk8s/current/sbin/iptables
+
+          [ -x "$SOURCE" ]
+          [ -e "$TARGET" ]
+
+          # Já está correto: não altera nada.
+          if "$TARGET" --version 2>&1 | grep -q 'nf_tables' &&
+             "$TARGET" -t nat -S >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          # Remove somente um bind anterior inválido, quando existir.
+          umount "$TARGET" >/dev/null 2>&1 || true
+
+          mount --bind "$SOURCE" "$TARGET"
+
+          # Falha imediatamente caso o backend NAT nftables não esteja utilizável.
+          "$TARGET" --version 2>&1 | grep -q 'nf_tables'
+          "$TARGET" -t nat -S >/dev/null
+
+      # Reaplica o bind sempre que o containerd for iniciado ou reiniciado.
+      - path: /etc/systemd/system/snap.microk8s.daemon-containerd.service.d/20-iptables-nft.conf
+        permissions: '0644'
+        owner: root:root
+        content: |
+          [Service]
+          ExecStartPre=/usr/local/sbin/microk8s-bind-iptables-nft
+
+      # Reaplica também antes do kubelite.
+      - path: /etc/systemd/system/snap.microk8s.daemon-kubelite.service.d/20-iptables-nft.conf
+        permissions: '0644'
+        owner: root:root
+        content: |
+          [Service]
+          ExecStartPre=/usr/local/sbin/microk8s-bind-iptables-nft
+
     runcmd:
       - apt-get update
       - apt-get install -y snapd jq curl libnetfilter-conntrack3 libnfnetlink0 iptables
@@ -53,6 +99,9 @@ let
       - mkdir -p /var/snap/microk8s/current/args/cni-network
       - grep -qxF -- '--cni-conf-dir=/var/snap/microk8s/current/args/cni-network' /var/snap/microk8s/current/args/kubelet || echo '--cni-conf-dir=/var/snap/microk8s/current/args/cni-network' >> /var/snap/microk8s/current/args/kubelet
 
+      # O CNI portmap usa o caminho absoluto do iptables dentro do snap.
+      # A correção efetiva é o bind mount aplicado pelo helper acima.
+
       - sed -i '/^--proxy-mode=/d' /var/snap/microk8s/current/args/kube-proxy
       - echo '--proxy-mode=nftables' >> /var/snap/microk8s/current/args/kube-proxy
       - prlimit --pid=$$ --nofile=1048576:1048576 || true
@@ -70,6 +119,10 @@ let
       - sysctl --system
       - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
       - snap set system refresh.hold=forever
+
+      # Aplica exatamente o bind mount que foi validado manualmente.
+      - /usr/local/sbin/microk8s-bind-iptables-nft
+      - /snap/microk8s/current/sbin/iptables -t nat -S >/dev/null
 
       - snap restart microk8s 
 
@@ -209,7 +262,7 @@ in
             "boot.autostart" = "true";
             "security.nesting" = "true";
             "security.privileged" = "true";
-            "linux.kernel_modules" = "ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter";
+            "linux.kernel_modules" = "ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter,rbd";
 
             "raw.lxc" = ''
               lxc.apparmor.profile = unconfined
@@ -267,8 +320,34 @@ in
 
     script = ''
       # Gera UUID único para esta instância
-      INSTANCE_UUID=$(cat /proc/sys/kernel/random/uuid | cut -c1-8)
-      
+      PREFIX_FILE=/var/lib/incus/microk8s-container-prefix
+      mkdir -p /var/lib/incus
+
+      if [ -s "$PREFIX_FILE" ]; then
+        INSTANCE_UUID=$(cat "$PREFIX_FILE")
+      else
+        EXISTING_PREFIX=$($${pkgs.incus}/bin/incus list --format csv -c n | $${pkgs.gnused}/bin/sed -n 's/^amnix-\([[:alnum:]-]\+\)-[12]$/\1/p' | $${pkgs.coreutils}/bin/sort | $${pkgs.coreutils}/bin/uniq -c | $${pkgs.coreutils}/bin/sort -k1,1nr -k2,2 | $${pkgs.gawk}/bin/awk 'NR == 1 { print $2 }')
+
+        if [ -n "$EXISTING_PREFIX" ]; then
+          INSTANCE_UUID="$EXISTING_PREFIX"
+        else
+          IMDS_TOKEN=$($${pkgs.curl}/bin/curl -fsS --connect-timeout 2 -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' http://169.254.169.254/latest/api/token || true)
+          INSTANCE_ID=$($${pkgs.curl}/bin/curl -fsS --connect-timeout 2 -H "X-aws-ec2-metadata-token: $IMDS_TOKEN" http://169.254.169.254/latest/meta-data/instance-id || true)
+
+          if [ -z "$INSTANCE_ID" ]; then
+            INSTANCE_ID=$(cat /sys/devices/virtual/dmi/id/product_uuid 2>/dev/null || true)
+          fi
+
+          INSTANCE_UUID=$(printf '%s' "$INSTANCE_ID" | $${pkgs.coreutils}/bin/tr -cd '[:alnum:]-')
+          if [ -z "$INSTANCE_UUID" ]; then
+            echo "Nao foi possivel obter um identificador unico para esta instancia." >&2
+            exit 1
+          fi
+        fi
+
+        printf '%s\n' "$INSTANCE_UUID" > "$PREFIX_FILE"
+      fi
+
       for i in 1 2; do
         case $i in
           1) NAME="amnix-"$INSTANCE_UUID"-1" ;;
@@ -292,6 +371,19 @@ NETEOF
         else
           echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
           $${pkgs.incus}/bin/incus start $NAME || true
+        fi
+
+        # O primeiro container de cada host publica o Traefik em TCP/443.
+        # A configuração fica no bootstrap do host e independe do deploy Kubernetes.
+        if [ "$i" -eq 1 ]; then
+          if $${pkgs.incus}/bin/incus config device get "$NAME" serverpod-https type >/dev/null 2>&1; then
+            $${pkgs.incus}/bin/incus config device set "$NAME" serverpod-https listen=tcp:0.0.0.0:443
+            $${pkgs.incus}/bin/incus config device set "$NAME" serverpod-https connect=tcp:127.0.0.1:443
+          else
+            $${pkgs.incus}/bin/incus config device add "$NAME" serverpod-https proxy \
+              listen=tcp:0.0.0.0:443 \
+              connect=tcp:127.0.0.1:443
+          fi
         fi
 
         sleep 5

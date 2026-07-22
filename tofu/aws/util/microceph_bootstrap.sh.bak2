@@ -1,0 +1,136 @@
+#!/bin/bash
+# ==============================================================================
+# SCRIPT DE BOOTSTRAP DO MICROCEPH
+# ==============================================================================
+# Uso: sudo microceph_bootstrap.sh <NOME_DO_PRIMEIRO_WORKER> [OPCOES]
+#
+# Opcoes (variaveis de ambiente):
+#   MICROCEPH_CHANNEL   canal do snap (padrao: squid/stable)
+#   VPN_INTERFACE       tailscale0 | wt0 | eth1 | etc. (auto-detectado)
+#   PUBLIC_NETWORK      CIDR da rede publica do Ceph (padrao: rede da VPN)
+#   CLUSTER_NETWORK     CIDR da rede de cluster (opcional)
+#   OSD_DEVICE          loop,N | /dev/sdb | etc. (padrao: loop,4G,1)
+#   FRESH_INSTALL       1 = remove microceph existente com confirmacao
+# ==============================================================================
+set -euo pipefail
+
+log()  { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >&2; }
+fail() { log "ERRO: $*"; exit 1; }
+
+# -----------------------------------------------------------------------------
+# Validacao de argumentos e permissao
+# -----------------------------------------------------------------------------
+if [[ "$#" -lt 1 ]]; then
+    fail "Uso: sudo $0 <NOME_DO_PRIMEIRO_WORKER>"
+fi
+NOVO_NODE_NAME="$1"
+
+if [[ "$EUID" -ne 0 ]]; then
+    fail "Este script precisa ser executado como root."
+fi
+
+# -----------------------------------------------------------------------------
+# Configuracoes
+# -----------------------------------------------------------------------------
+MICROCEPH_CHANNEL="${MICROCEPH_CHANNEL:-squid/stable}"
+OSD_DEVICE="${OSD_DEVICE:-loop,4G,1}"
+FRESH_INSTALL="${FRESH_INSTALL:-0}"
+
+# -----------------------------------------------------------------------------
+# Deteccao da interface VPN
+# -----------------------------------------------------------------------------
+VPN_INTERFACE="${VPN_INTERFACE:-}"
+if [[ -z "$VPN_INTERFACE" ]]; then
+    for iface in tailscale0 wt0; do
+        if ip link show "$iface" >/dev/null 2>&1; then
+            VPN_INTERFACE="$iface"
+            break
+        fi
+    done
+fi
+
+if [[ -z "$VPN_INTERFACE" ]]; then
+    fail "Nenhuma interface VPN detectada (tailscale0/wt0). Especifique VPN_INTERFACE."
+fi
+
+VPN_IP=$(ip -4 addr show dev "$VPN_INTERFACE" 2>/dev/null | grep -oP '(?<=inet )\d+(\.\d+){3}' | head -1)
+if [[ -z "$VPN_IP" ]]; then
+    fail "Interface $VPN_INTERFACE nao possui IPv4 valido."
+fi
+log "Interface VPN: $VPN_INTERFACE  IP: $VPN_IP"
+
+# -----------------------------------------------------------------------------
+# Redes Ceph
+# -----------------------------------------------------------------------------
+if [[ -z "${PUBLIC_NETWORK:-}" ]]; then
+    fail "PUBLIC_NETWORK nao definido. Passe explicitamente (ex: 100.64.0.0/10 para Tailscale)."
+fi
+log "Public network: $PUBLIC_NETWORK"
+
+if [[ -n "${CLUSTER_NETWORK:-}" ]]; then
+    log "Cluster network: $CLUSTER_NETWORK"
+fi
+
+# -----------------------------------------------------------------------------
+# Idempotencia: nao destruir instalacao existente sem explicitar
+# -----------------------------------------------------------------------------
+if snap list microceph >/dev/null 2>&1; then
+    if [[ "$FRESH_INSTALL" == "1" ]]; then
+        snap remove microceph --purge
+    else
+        if microceph status >/dev/null 2>&1; then
+            fail "MicroCeph ja instalado e cluster inicializado. Reutilize ou use FRESH_INSTALL=1."
+        else
+            fail "MicroCeph instalado, mas cluster nao inicializado. Use FRESH_INSTALL=1."
+        fi
+    fi
+fi
+# -----------------------------------------------------------------------------
+# Instalacao
+# -----------------------------------------------------------------------------
+log "Instalando MicroCeph pelo canal $MICROCEPH_CHANNEL..."
+snap install microceph --channel="$MICROCEPH_CHANNEL"
+snap refresh --hold microceph
+log "Aguardando servico microceph ficar ativo..."
+for attempt in $(seq 1 12); do
+    if snap services microceph | grep -q ' active '; then break; fi
+    log "Servico microceph nao ativo (tentativa $attempt/12). Aguardando 10s..."
+    sleep 10
+done
+if ! snap services microceph | grep -q ' active '; then
+    fail "Servico microceph nao ficou ativo apos instalacao."
+fi
+# -----------------------------------------------------------------------------
+# Bootstrap
+# -----------------------------------------------------------------------------
+log "Executando bootstrap..."
+BOOTSTRAP_ARGS=(
+    --microceph-ip "$VPN_IP"
+    --mon-ip "$VPN_IP"
+    --public-network "$PUBLIC_NETWORK"
+)
+if [[ -n "${CLUSTER_NETWORK:-}" ]]; then
+    BOOTSTRAP_ARGS+=(--cluster-network "$CLUSTER_NETWORK")
+fi
+
+sudo microceph cluster bootstrap "${BOOTSTRAP_ARGS[@]}"
+
+log "Aguardando daemon estabilizar..."
+sleep 5
+
+# -----------------------------------------------------------------------------
+# OSD local (configuravel)
+# -----------------------------------------------------------------------------
+if [[ -n "$OSD_DEVICE" ]]; then
+    log "Adicionando dispositivo OSD: $OSD_DEVICE"
+    sudo microceph disk add "$OSD_DEVICE"
+fi
+
+# -----------------------------------------------------------------------------
+# Token de join para o primeiro worker
+# -----------------------------------------------------------------------------
+TOKEN_SAIDA=$(sudo microceph cluster add "$NOVO_NODE_NAME")
+
+log "Bootstrap concluido."
+# Apenas o token vai para stdout (orquestrador o captura)
+echo "$TOKEN_SAIDA"

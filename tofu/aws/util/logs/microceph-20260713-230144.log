@@ -1,0 +1,74 @@
+[2026-07-13 23:01:44] Validando dependencias locais...
+[?1049h[22;0;0t[1;24r(B[m[4l[?7h[?1h=[?1006;1000h[39;49m[?1h=[?1h=[39;49m(B[m[H[2J[21d(B[0;1m[36m[44m[J[H[K[2d[K[3d[K[4d[K[5;9H[1K (0[0;1m[37m[47mlqqqqqqqqqqqqqqqqqqqqqq(B[0;1m[34m[47mEscolher VPN(0[0;1m[37m[47mqqqqqqqqqqqqqqqqqqqqqqqq(0[0m[30m[47mk(B[0;1m[36m[44m[K[6;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m Escolha qual VPN sera usada para conectividade do        (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[7;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m cluster:[49X[7;69H(0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[8;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mlqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq(0[0;1m[37m[47mk(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[9;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0m[30m[47m     (B[0;1m[31m[44mt[33m[44mailscale(B[0m[30m[47m  (B[0;1m[37m[44mTailscale (padrao)(B[0m[30m[47m[20X[9;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[10;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0m[30m[47m     [31m[47mn(B[0;1m[34m[47metbird(B[0m[30m[47m    Netbird (IP range: 100.82.0.0/16)     (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[11;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[11;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[12;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[12;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[13;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[13;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[14;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[14;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[15;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[15;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[16;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mm(0[0;1m[37m[47mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[17;9H[1K (0[0;1m[37m[47mtqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq(0[0m[30m[47mu(B[0;1m[30m[40m  [36m[44m[K[18;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m[58X[18;69H(0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[19;9H[1K (0[0;1m[37m[47mm(0[0m[30m[47mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj(B[0;1m[30m[40m  [36m[44m[K[20;11H[1K [30m[40m[60X[20;72H[36m[44m[K[16;68H[39;49m(B[m[18;26H(B[0;1m[37m[44m<[33m[44m  OK  [37m[44m>[18;42H(B[0m[30m[47m<(B[0;1m[30m[47mCancel(B[0m[30m[47m>[18;29H[39;49m(B[m[20;71H[?1006;1000l[24;1H[?1049l[23;0;0t[?1l>[H[2J[3J[2026-07-13 23:01:51] VPN selecionada: Tailscale
+[2026-07-13 23:01:51] Rede publica do MicroCeph: 100.64.0.0/10
+[2026-07-13 23:01:55] Obtendo IPs Tailscale dos hosts (paralelo)...
+[2026-07-13 23:02:01] 3.17.28.182 -> tailscale0: 100.98.69.75
+[2026-07-13 23:02:01] 18.225.224.209 -> tailscale0: 100.108.239.100
+[2026-07-13 23:02:01] AUTO_SELECT: master = node0 (3.17.28.182)
+[2026-07-13 23:02:01] AUTO_SELECT: workers = 1
+[2026-07-13 23:02:01] Validando containers em execucao e nomes unicos...
+[H[2J[3J[2026-07-13 23:02:19] Master: pub=3.17.28.182 container=amnix-97015b18-1 hostname=amnix-97015b18-1 tailscale0=100.98.69.75
+[2026-07-13 23:02:19] Workers selecionados: 1
+[2026-07-13 23:02:19]   - pub=18.225.224.209 containers=amnix-334e12e8-1 amnix-334e12e8-2 tailscale0=100.108.239.100
+[2026-07-13 23:02:19] IP Tailscale do master (join endpoint): 100.98.69.75
+[2026-07-13 23:02:22] Primeiro worker para geracao do token inicial: amnix-334e12e8-1
+[2026-07-13 23:02:22] Verificando cluster MicroCeph existente no master...
+[2026-07-13 23:02:26] Membros atuais no cluster: [{"name":"amnix-97015b18-1","address":"100.98.69.75:7443","certificate":"-----BEGIN CERTIFICATE-----\nMIICATCCAYegAwIBAgIQIgB2KWo34PPx/jNoe71+mjAKBggqhkjOPQQDAzAuMQww\nCgYDVQQKEwNMWEQxHjAcBgNVBAMMFXJvb3RAYW1uaXgtOTcwMTViMTgtMTAeFw0y\nNjA3MTQwMTU0MzRaFw0zNjA3MTEwMTU0MzRaMC4xDDAKBgNVBAoTA0xYRDEeMBwG\nA1UEAwwVcm9vdEBhbW5peC05NzAxNWIxOC0xMHYwEAYHKoZIzj0CAQYFK4EEACID\nYgAE+QaaXmBxdEAmS5RNLmAamt+TkptYu+GBwlyCgl/8tKFcYA7Jd6Ak2vhQ76Az\ncl6GmJde3Pkq5Z5IYJwxvddyvjicwvbLsVJMA2kHPsaah6IEWh97H3G9PyOlUtXR\noPDso2owaDAOBgNVHQ8BAf8EBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYD\nVR0TAQH/BAIwADAzBgNVHREELDAqghBhbW5peC05NzAxNWIxOC0xhwR/AAABhxAA\nAAAAAAAAAAAAAAAAAAABMAoGCCqGSM49BAMDA2gAMGUCMBcVk+fSERabsL63W3jp\nxN6otVX9kgLub8lrjjNaStRuC9YVN7ybl4BE45W3z1hNYwIxAO14MkNIDlraSLj0\ni5o+t+v39oUtxM90uAczDibq0x4gsTKMzF29gxqMO1DNIU363Q==\n-----END CERTIFICATE-----\n","role":"voter","schema_internal_version":6,"schema_external_version":7,"last_heartbeat":"2026-07-14T02:02:22.192610374Z","status":"ONLINE","extensions":["internal:runtime_extension_v1","internal:rename_core_endpoints"],"secret":""}]
+[2026-07-13 23:02:26] --- Executando bootstrap do MicroCeph no master ---
+[2026-07-13 23:02:26] >>> [3.17.28.182/amnix-97015b18-1] Bootstrap do MicroCeph
+[2026-07-13 23:02:26] Copiando /osnix/ubunix/tofu/aws/util/microceph_bootstrap.sh para 3.17.28.182/amnix-97015b18-1:/tmp/microceph_bootstrap.sh
+[2026-07-13 23:02:38] Script copiado e permissao 700 aplicada.
+[2026-07-13 23:02:38] Executando bootstrap com primeiro worker: amnix-334e12e8-1
+[2026-07-14 02:02:40] Interface VPN: tailscale0  IP: 100.98.69.75
+[2026-07-14 02:02:40] Public network: 100.64.0.0/10
+[2026-07-14 02:02:43] Cluster MicroCeph ja ativo. Reutilizando e gerando token para amnix-334e12e8-1.
+[2026-07-14 02:02:44] Token anterior para amnix-334e12e8-1 ja existe. Removendo registro e gerando novo...
+[2026-07-13 23:02:46] Token extraido: eyJzZWNyZXQiOiJj...
+[2026-07-13 23:02:46] Token inicial obtido com sucesso.
+[2026-07-13 23:02:46] --- Executando join dos workers ---
+[2026-07-13 23:02:46] --- Host worker: 18.225.224.209 (amnix-334e12e8-1 tailscale0=100.108.239.100) ---
+[2026-07-13 23:02:48] >>> [18.225.224.209/amnix-334e12e8-1] Join do MicroCeph
+[2026-07-13 23:02:48] Copiando /osnix/ubunix/tofu/aws/util/microceph_join.sh para 18.225.224.209/amnix-334e12e8-1:/tmp/microceph_join.sh
+Pushing /tmp/microceph_join.sh to /tmp/microceph_join.sh: 100% (5.35kB/s)                                                                          [2026-07-13 23:02:58] Script copiado e permissao 700 aplicada.
+bash: -c: line 1: syntax error near unexpected token `('
+bash: -c: line 1: `MICROCEPH_CHANNEL=squid/stable OSD_DEVICE=loop,4G,1 FRESH_INSTALL=0 PUBLIC_NETWORK=100.64.0.0/10 /tmp/microceph_join.sh Pushing /tmp/microceph_bootstrap.sh to /tmp/microceph_bootstrap.sh: 100% (7.65kB/s)                                                                                    eyJzZWNyZXQiOiJjN2Q0NDJlNTQ5ZGY2ZmVlMDU3M2VkZWZkMmJlMDQ1Y2E3NTczMWNhZDIzOTcwY2U2ZDcwYjhhNzYzNTEwODJjIiwiZmluZ2VycHJpbnQiOiJlNGY4ZTkxNDFjODc2M2RjYmNkNTYzZjQ4ODk2YzUxMzQwNWE0YWMyOGYyOTVhZDZlMTY3NWMwMDAzZjM1ZGY0Iiwiam9pbl9hZGRyZXNzZXMiOlsiMTAwLjk4LjY5Ljc1Ojc0NDMiXX0= 100.98.69.75'
+[2026-07-13 23:03:00] AVISO: Join falhou para 18.225.224.209/amnix-334e12e8-1
+[2026-07-13 23:03:00] AVISO: Join falhou: 18.225.224.209/amnix-334e12e8-1
+[2026-07-13 23:03:00] === Verificando saude do cluster no master ===
+MicroCeph deployment summary:
+- amnix-97015b18-1 (100.98.69.75)
+  Services: mds, mgr, mon, osd
+  Disks: 1
++------------------+-------------------+-------+------------------------------------------------------------------+--------+
+|       NAME       |      ADDRESS      | ROLE  |                           FINGERPRINT                            | STATUS |
++------------------+-------------------+-------+------------------------------------------------------------------+--------+
+| amnix-97015b18-1 | 100.98.69.75:7443 | voter | a8fb33664ec0ade39d556bd965770c5430fc835f8844289914b5f969054eccb6 | ONLINE |
++------------------+-------------------+-------+------------------------------------------------------------------+--------+
+Disks configured in MicroCeph:
++-----+------------------+------------------------------------------------------------+
+| OSD |     LOCATION     |                            PATH                            |
++-----+------------------+------------------------------------------------------------+
+| 1   | amnix-97015b18-1 | /var/snap/microceph/common/data/osd/ceph-1/osd-backing.img |
++-----+------------------+------------------------------------------------------------+
+  cluster:
+    id:     ade3bf6d-8e59-4b0f-9552-2df8c563f131
+    health: HEALTH_WARN
+            OSD count 1 < osd_pool_default_size 3
+ 
+  services:
+    mon: 1 daemons, quorum amnix-97015b18-1 (age 4m)
+    mgr: amnix-97015b18-1(active, since 3m)
+    osd: 1 osds: 1 up (since 2m), 1 in (since 2m)
+ 
+  data:
+    pools:   0 pools, 0 pgs
+    objects: 0 objects, 0 B
+    usage:   26 MiB used, 4.0 GiB / 4 GiB avail
+    pgs:     
+ 
+ID  CLASS  WEIGHT   TYPE NAME                  STATUS  REWEIGHT  PRI-AFF
+-1         0.00389  root default                                        
+-2         0.00389      host amnix-97015b18-1                           
+ 1         0.00389          osd.1                  up   1.00000  1.00000
+[2026-07-13 23:03:28] AVISO: Workers que falharam: 18.225.224.209/amnix-334e12e8-1
+[2026-07-13 23:03:28] Limpando arquivos temporarios...

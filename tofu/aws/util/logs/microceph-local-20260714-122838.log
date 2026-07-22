@@ -1,0 +1,102 @@
+[2026-07-14 12:28:38] Validando dependencias locais...
+[2026-07-14 12:28:38] Verificando containers Incus...
+[2026-07-14 12:28:38]   leonk7s: RUNNING
+[2026-07-14 12:28:38]   leonk8s: RUNNING
+[2026-07-14 12:28:38]   leonk9s: RUNNING
+[2026-07-14 12:28:38] Obtendo IPs locais dos containers via eth0...
+[2026-07-14 12:28:38]   leonk7s -> 192.168.0.7
+[2026-07-14 12:28:38]   leonk8s -> 192.168.0.8
+[2026-07-14 12:28:38]   leonk9s -> 192.168.0.9
+[2026-07-14 12:28:38] Obtendo hostnames dos containers...
+[2026-07-14 12:28:39]   leonk7s hostname: leonk7s
+[2026-07-14 12:28:39]   leonk8s hostname: leonk8s
+[2026-07-14 12:28:39]   leonk9s hostname: leonk9s
+[2026-07-14 12:28:39] Verificando cluster MicroCeph existente no master...
+[2026-07-14 12:28:39] Membros atuais: []
+[2026-07-14 12:28:39] --- Executando bootstrap do MicroCeph no master ---
+[2026-07-14 12:28:39] >>> [leonk7s] Bootstrap do MicroCeph
+[2026-07-14 12:28:39] Copiando microceph_bootstrap.sh para leonk7s:/tmp/microceph_bootstrap.sh
+[2026-07-14 12:28:39] Script copiado e permissao 700 aplicada.
+[2026-07-14 12:28:39] Executando bootstrap com primeiro worker: leonk8s
+[2026-07-14 15:28:39] Interface VPN: eth0  IP: 192.168.0.7
+[2026-07-14 15:28:39] Public network: 192.168.0.0/24
+[2026-07-14 15:28:39] Instalando MicroCeph pelo canal squid/stable...
+[2026-07-14 15:28:46] Aguardando servico microceph ficar ativo...
+[2026-07-14 15:28:46] MicroCeph instalado e servico ativo.
+[2026-07-14 15:28:46] Executando bootstrap...
+[2026-07-14 15:28:59] Aguardando daemon estabilizar...
+[2026-07-14 15:29:04] Adicionando dispositivo OSD: loop,4G,1
+[2026-07-14 15:29:08] Bootstrap concluido.
+[2026-07-14 12:29:08] Token extraido: eyJzZWNyZXQiOiI0...
+[2026-07-14 12:29:08] Token inicial obtido com sucesso.
+[2026-07-14 12:29:08] --- Executando join dos workers ---
+[2026-07-14 12:29:08] >>> [leonk8s] Join do MicroCeph
+[2026-07-14 12:29:08] Copiando microceph_join.sh para leonk8s:/tmp/microceph_join.sh
+Pushing /osnix/ubunix/tofu/aws/util/microceph_join.sh to /tmp/microceph_join.sh: 100% (5.31kB/s)                                                                                                 [2026-07-14 12:29:08] Script copiado e permissao 700 aplicada.
+bash: -c: line 1: syntax error near unexpected token `('
+bash: -c: line 1: `MICROCEPH_CHANNEL='squid/stable' OSD_DEVICE='loop,4G,1' FRESH_INSTALL='0' VPN_INTERFACE='eth0' PUBLIC_NETWORK='192.168.0.0/24' /tmp/microceph_join.sh '$'\rPushing /osnix/ubunix/tofu/aws/util/microceph_bootstrap.sh to /tmp/microceph_bootstrap.sh: 100% (7.30kB/s)\r                                                                                                           \reyJzZWNyZXQiOiI0NWYzMWRlNzRhMmQzYWRlZjQ0NjcxMWYxMmM1ZTEwNGZjYjJkNmRjNWI0MmI3YmQ1NTdhMjdjYWIwNGM5ODM3IiwiZmluZ2VycHJpbnQiOiIxN2UzNDQyZjA4NDU2ZjI4ZWExN2M0M2MzNjkzZDFhZWM2MjU3ZjRiMGNmODczZTkyZjJmYWNmYzYwMTRjNmNlIiwiam9pbl9hZGRyZXNzZXMiOlsiMTkyLjE2OC4wLjc6NzQ0MyJdfQ=='' '192.168.0.7''
+[2026-07-14 12:29:08] AVISO: Join falhou para leonk8s
+[2026-07-14 12:29:08] AVISO: Join falhou: leonk8s
+[2026-07-14 12:29:09] Token gerado para leonk9s: eyJzZWNyZXQiOiI5...
+[2026-07-14 12:29:09] >>> [leonk9s] Join do MicroCeph
+[2026-07-14 12:29:09] Copiando microceph_join.sh para leonk9s:/tmp/microceph_join.sh
+Pushing /osnix/ubunix/tofu/aws/util/microceph_join.sh to /tmp/microceph_join.sh: 100% (5.31kB/s)                                                                                                 [2026-07-14 12:29:09] Script copiado e permissao 700 aplicada.
+[2026-07-14 15:29:09] Interface VPN: eth0  IP: 192.168.0.9
+[2026-07-14 15:29:09] Verificando conectividade com o lider 192.168.0.7...
+[2026-07-14 15:29:10] Rota ate o lider OK.
+[2026-07-14 15:29:10] Public network: 192.168.0.0/24
+[2026-07-14 15:29:10] Instalando MicroCeph pelo canal squid/stable...
+microceph (squid/stable) 19.2.3+snapcf306793a4 from Canonical** installed
+General refreshes of "microceph" held indefinitely
+[2026-07-14 15:29:17] Aguardando snapd terminar de carregar...
+[2026-07-14 15:29:17] MicroCeph instalado e servico ativo.
+[2026-07-14 15:29:17] Executando cluster join no lider 192.168.0.7...
+[2026-07-14 15:29:24] Aguardando sincronizacao de chaves...
+[2026-07-14 15:29:29] Adicionando dispositivo OSD: loop,4G,1
+
++-----------+---------+
+|   PATH    | STATUS  |
++-----------+---------+
+| loop,4G,1 | Success |
++-----------+---------+
+[2026-07-14 15:29:34] Join concluido com sucesso.
+[2026-07-14 12:29:34] OK: leonk9s entrou no cluster.
+[2026-07-14 12:29:34] Join OK: leonk9s
+[2026-07-14 12:29:34] === Verificando saude do cluster ===
+MicroCeph deployment summary:
+- leonk7s (192.168.0.7)
+  Services: mds, mgr, mon, osd
+  Disks: 1
+- leonk9s (192.168.0.9)
+  Services: mds, mgr, mon, osd
+  Disks: 1
++---------+------------------+-------+------------------------------------------------------------------+--------+
+|  NAME   |     ADDRESS      | ROLE  |                           FINGERPRINT                            | STATUS |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk7s | 192.168.0.7:7443 | voter | f70ef911df77b04b5c3d2a1b669936cbb0971ae8f0566dc6a6c2bbc7a7930c67 | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk9s | 192.168.0.9:7443 | spare | c100173df95f3c60564ec5222952402c89fa46e9a7b7590b7fb30e55b70b8b50 | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+Error: internal error: unable to fetch unpartitoned disks: internal error: unable to fetch available disks: failed listing storage devices: Failed to find "/dev/disk/by-path/pci-0000:01:00.0-nvme-1": lstat /dev/nvme0n1: no such file or directory
+  cluster:
+    id:     55003448-491c-40b1-a033-691a6d8c5a7a
+    health: HEALTH_WARN
+            OSD count 1 < osd_pool_default_size 3
+ 
+  services:
+    mon: 2 daemons, quorum leonk7s,leonk9s (age 5s)
+    mgr: leonk7s(active, since 31s), standbys: leonk9s
+    osd: 1 osds: 1 up (since 17s), 1 in (since 22s)
+ 
+  data:
+    pools:   0 pools, 0 pgs
+    objects: 0 objects, 0 B
+    usage:   426 MiB used, 3.6 GiB / 4 GiB avail
+    pgs:     
+ 
+ID  CLASS  WEIGHT   TYPE NAME         STATUS  REWEIGHT  PRI-AFF
+-1         0.00389  root default                               
+-2         0.00389      host leonk7s                           
+ 1         0.00389          osd.1         up   1.00000  1.00000
+[2026-07-14 12:29:36] AVISO: Workers que falharam: leonk8s
+[2026-07-14 12:29:36] Limpando arquivos temporarios...

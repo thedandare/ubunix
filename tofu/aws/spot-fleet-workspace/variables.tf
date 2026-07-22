@@ -5,7 +5,7 @@ variable "aws_region" {
 
 variable "node_count" {
   type    = number
-  default = 1
+  default = 2
 }
 
 variable "name" {
@@ -25,7 +25,7 @@ variable "nixos_ami_name_filter" {
 
 variable "instance_type" {
   type    = string
-  default = "t3.medium"
+  default = "t3.small"
 }
 
 variable "subnet_ids" {
