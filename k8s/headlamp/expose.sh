@@ -15,6 +15,7 @@ NAMESPACE="${NAMESPACE:-kube-system}"
 SERVICE_NAME="${SERVICE_NAME:-my-headlamp}"
 HEADLAMP_PORT="${HEADLAMP_PORT:-4466}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-39.0.8}"
+TRAEFIK_REPO_URL="${TRAEFIK_REPO_URL:-https://traefik.github.io/charts}"
 REMOTE_DIR="${REMOTE_DIR:-/tmp/k8s-headlamp}"
 
 SSH_KEY_POSIX=$(echo "$SSH_KEY" | sed 's/\\/\//g')
@@ -36,7 +37,13 @@ TRAEFIK_HEADLAMP_HOSTPORT=$("${SSH[@]}" \
 if [ "${TRAEFIK_HEADLAMP_HOSTPORT:-}" != "$HEADLAMP_PORT" ] || [ -n "${FORCE_TRAEFIK_UPGRADE:-}" ]; then
   echo "=== Upgrading Traefik via Helm to add the 'headlamp' entrypoint ==="
   "${SSH[@]}" \
-    "microk8s helm upgrade traefik traefik/traefik --version $TRAEFIK_VERSION -n ingress --reuse-values --skip-schema-validation -f $REMOTE_DIR/traefik-values-headlamp.yaml"
+    "set -e
+if ! microk8s helm repo list 2>/dev/null | awk 'NR > 1 && \$1 == \"traefik\" { found=1 } END { exit !found }'; then
+  echo '=== Adding the Traefik Helm repository ==='
+  microk8s helm repo add traefik $TRAEFIK_REPO_URL
+fi
+microk8s helm repo update
+microk8s helm upgrade traefik traefik/traefik --version $TRAEFIK_VERSION -n ingress --reuse-values --skip-schema-validation -f $REMOTE_DIR/traefik-values-headlamp.yaml"
 
   echo "=== Waiting for Traefik DaemonSet rollout ==="
   "${SSH[@]}" "microk8s kubectl rollout status daemonset/traefik -n ingress --timeout=180s"
