@@ -5,40 +5,54 @@ set -euo pipefail
 # LoadBalancer IPs:
 #   PostgreSQL -> :5432
 
-cd "$(dirname "$0")"
-. ./common.sh
+SSH_HOST="${SSH_HOST:-root@34.1.28.21}"
+SSH_KEY="${SSH_KEY:-/mnt/c/Users/leo/.ssh/root_id_ed25519}"
+if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
+  SSH_KEY="$HOME/.ssh/root_id_ed25519"
+fi
+PORT="${SSH_PORT:-22}"
 
+CLUSTER_NAME="${CLUSTER_NAME:-postgres-server}"
+NAMESPACE="${NAMESPACE:-default}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-39.0.8}"
+REMOTE_DIR="${REMOTE_DIR:-/tmp/k8s-psql}"
+
+# Convert Windows path backslashes to forward slashes for compatibility in git bash/ssh command
+SSH_KEY_POSIX=$(echo "$SSH_KEY" | sed 's/\\/\//g')
+SSH=(ssh -i "$SSH_KEY_POSIX" -p "$PORT" -o StrictHostKeyChecking=no "$SSH_HOST")
+
+cd "$(dirname "$0")"
 
 # ─── Step 1: Copy manifests ───────────────────────────────────────────────────
 echo "=== Copying manifests to remote server ==="
-remote "mkdir -p $REMOTE_DIR"
-copy traefik-values-psql.yaml expose.yaml
+"${SSH[@]}" "mkdir -p $REMOTE_DIR"
+"${SSH[@]}" "cat > $REMOTE_DIR/traefik-values-psql.yaml" < traefik-values-psql.yaml
+"${SSH[@]}" "cat > $REMOTE_DIR/expose.yaml" < expose.yaml
 
 # ─── Step 2: Helm upgrade Traefik (idempotent) ───────────────────────────────
 # Only runs if the 'postgres' entrypoint is not already in the DaemonSet args.
-TRAEFIK_HAS_POSTGRES=$(remote \
+TRAEFIK_HAS_POSTGRES=$("${SSH[@]}" \
   "microk8s kubectl get daemonset/traefik -n ingress -o jsonpath='{.spec.template.spec.containers[0].args}' 2>/dev/null | grep -c entryPoints.postgres.address || true")
 
 if [ "${TRAEFIK_HAS_POSTGRES:-0}" -eq 0 ] || [ -n "${FORCE_TRAEFIK_UPGRADE:-}" ]; then
   echo "=== Upgrading Traefik via Helm to add the 'postgres' entrypoint ==="
-  remote \
+  "${SSH[@]}" \
     "microk8s helm upgrade traefik traefik/traefik --version $TRAEFIK_VERSION -n ingress --reuse-values --skip-schema-validation -f $REMOTE_DIR/traefik-values-psql.yaml"
 
   echo "=== Waiting for Traefik DaemonSet rollout ==="
-  remote "microk8s kubectl rollout status daemonset/traefik -n ingress --timeout=180s"
+  "${SSH[@]}" "microk8s kubectl rollout status daemonset/traefik -n ingress --timeout=180s"
 else
   echo "=== Traefik already has the 'postgres' entrypoint — skipping Helm upgrade ==="
 fi
 
 # ─── Step 3: Apply IngressRouteTCP ────────────────────────────────────────────
 echo "=== Applying IngressRouteTCP ==="
-remote "microk8s kubectl apply -f $REMOTE_DIR/expose.yaml"
+"${SSH[@]}" "microk8s kubectl apply -f $REMOTE_DIR/expose.yaml"
 
 # ─── Step 4: Verify ───────────────────────────────────────────────────────────
 echo ""
 echo "=== Verification ==="
-remote bash <<REMOTE
+"${SSH[@]}" bash <<REMOTE
 echo "--- Traefik pods ---"
 microk8s kubectl get pods -n ingress -o wide
 echo ""
