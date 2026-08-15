@@ -4,7 +4,7 @@ set -euo pipefail
 # Installs/upgrades Portainer CE on the remote MicroK8s cluster via 'microk8s helm'.
 # Chart: https://artifacthub.io/packages/helm/portainer/portainer
 
-SSH_HOST="root@34.1.28.21"
+SSH_HOST="root@34.0.48.251"
 SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
 if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
   SSH_KEY="$HOME/.ssh/root_id_ed25519"

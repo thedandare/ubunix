@@ -5,7 +5,7 @@ set -euo pipefail
 #   UI   -> :9000
 #   Edge -> :8000
 
-SSH_HOST="root@34.1.28.21"
+SSH_HOST="root@34.0.50.126"
 SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
 if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
   SSH_KEY="$HOME/.ssh/root_id_ed25519"
