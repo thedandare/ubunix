@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Creates the headlamp-admin ServiceAccount plus its never-expiring token and
-# prints the token used to log into Headlamp.
+# Creates the never-expiring token of the headlamp-admin ServiceAccount and
+# prints it, so it can be pasted into the Headlamp login screen.
 #
 #     ./deploy-headlamp-token.sh <server_ip_1> [server_ip_2 ...]
 
@@ -35,6 +35,17 @@ for IP in "$@"; do
   echo "========================================================="
   echo " Deploying the headlamp token to $SSH_HOST"
   echo "========================================================="
+
+  # No ServiceAccount means the token controller has nothing to issue a token
+  # for, and the secret below then stays empty forever.
+  echo "=== Checking the headlamp-admin ServiceAccount ==="
+  remote "
+set -e
+microk8s kubectl -n $NAMESPACE get serviceaccount headlamp-admin >/dev/null 2>&1 \
+  || microk8s kubectl -n $NAMESPACE create serviceaccount headlamp-admin
+microk8s kubectl get clusterrolebinding headlamp-admin >/dev/null 2>&1 \
+  || microk8s kubectl create clusterrolebinding headlamp-admin \
+       --serviceaccount=$NAMESPACE:headlamp-admin --clusterrole=cluster-admin"
 
   echo "=== Copying manifests to remote server ==="
   remote "mkdir -p $REMOTE_DIR"
