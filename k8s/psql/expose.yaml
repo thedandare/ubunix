@@ -1,33 +1,21 @@
----
-# Exposes the CloudNativePG primary outside the cluster without Traefik/Helm.
+# Raw TCP route to the CloudNativePG primary through Traefik.
 #
-# CloudNativePG already creates postgres-server-rw / -ro / -r as ClusterIP
-# services. Those are managed by the operator, so instead of mutating them we
-# add our own Service with the same selector as the -rw one (primary instance).
+# CloudNativePG owns the postgres-server-rw / -ro / -r ClusterIP services, so
+# nothing here mutates them: Traefik proxies the 'postgres' entrypoint (5432 on
+# the LoadBalancer IPs) to the -rw service, which always points at the primary.
 #
-# - nodePort 30432 works on every node IP.
-# - externalIPs makes kube-proxy also accept traffic on the standard port 5432
-#   on those addresses (same trick the Traefik service in ns/ingress uses).
-apiVersion: v1
-kind: Service
+# HostSNI(`*`) is required for non-TLS TCP routers: the PostgreSQL wire protocol
+# starts in plaintext, so there is no SNI to match on.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
 metadata:
-  name: postgres-server-ext
+  name: postgres-tcp
   namespace: default
-  labels:
-    cnpg.io/cluster: postgres-server
 spec:
-  type: NodePort
-  externalTrafficPolicy: Cluster
-  selector:
-    cnpg.io/cluster: postgres-server
-    cnpg.io/instanceRole: primary
-  ports:
-    - name: postgres
-      protocol: TCP
-      port: 5432
-      targetPort: 5432
-      nodePort: 30432
-  externalIPs:
-    - 34.1.25.177
-    - 34.1.28.21
-    - 34.1.17.21
+  entryPoints:
+    - postgres
+  routes:
+    - match: HostSNI(`*`)
+      services:
+        - name: postgres-server-rw
+          port: 5432
