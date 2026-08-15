@@ -1,0 +1,10 @@
+# Extra Traefik entrypoint used to publish Headlamp on the node IPs.
+# Applied with: helm upgrade traefik traefik/traefik --reuse-values -f this-file
+ports:
+  headlamp:
+    port: 8080
+    exposedPort: 8080
+    hostPort: 8080
+    protocol: TCP
+    expose:
+      default: true
