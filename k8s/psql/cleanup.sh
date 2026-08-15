@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Tears the cluster down: Cluster, PVCs, secret, NodePort Service, temp files.
+# Tears the cluster down: Cluster, PVCs, secret, Traefik TCP route, temp files.
+# The 'postgres' Traefik entrypoint added by expose.sh is left in place.
 
 cd "$(dirname "$0")"
 . ./common.sh
 
-echo "=== Deleting the NodePort Service ==="
-remote "microk8s kubectl delete -f $REMOTE_DIR/expose.yaml --ignore-not-found=true 2>/dev/null \
-  || microk8s kubectl delete svc postgres-server-ext -n $NAMESPACE --ignore-not-found=true"
+echo "=== Deleting the Traefik TCP route ==="
+remote "microk8s kubectl delete ingressroutetcp postgres-tcp -n $NAMESPACE --ignore-not-found=true"
 
 echo "=== Deleting the PostgreSQL Cluster ==="
 remote "microk8s kubectl delete cluster $CLUSTER_NAME -n $NAMESPACE --ignore-not-found=true"

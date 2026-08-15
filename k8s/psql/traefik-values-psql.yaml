@@ -1,0 +1,9 @@
+# Extra Traefik entrypoint used to publish PostgreSQL on the LoadBalancer IPs.
+# Applied with: helm upgrade traefik traefik/traefik --reuse-values -f this-file
+ports:
+  postgres:
+    port: 5432
+    exposedPort: 5432
+    protocol: TCP
+    expose:
+      default: true
