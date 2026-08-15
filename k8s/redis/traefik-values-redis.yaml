@@ -1,0 +1,22 @@
+# Extra Traefik entrypoints used to publish Redis on the node IPs.
+# Applied with: helm upgrade traefik traefik/traefik --reuse-values -f this-file
+#
+# hostPort is what actually makes the ports reachable from outside GCE: the
+# service externalIPs only match packets whose destination is literally one of
+# those addresses, and GCE NATs the public IP to the instance's internal IP
+# before it reaches the node.
+ports:
+  redis:
+    port: 18494
+    exposedPort: 18494
+    hostPort: 18494
+    protocol: TCP
+    expose:
+      default: true
+  redis-sentinel:
+    port: 26379
+    exposedPort: 26379
+    hostPort: 26379
+    protocol: TCP
+    expose:
+      default: true
