@@ -2,9 +2,9 @@
 # Applied with: helm upgrade traefik traefik/traefik --reuse-values -f this-file
 ports:
   headlamp:
-    port: 8080
-    exposedPort: 8080
-    hostPort: 8080
+    port: 4466
+    exposedPort: 4466
+    hostPort: 4466
     protocol: TCP
     expose:
       default: true

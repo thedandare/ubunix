@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # Publishes Headlamp through Traefik on the cluster node IPs:
-#   Headlamp -> :8080
+#   Headlamp -> :4466
 
 SSH_HOST="${SSH_HOST:-root@34.1.28.21}"
 SSH_KEY="${SSH_KEY:-/mnt/c/Users/leo/.ssh/root_id_ed25519}"
@@ -13,7 +13,7 @@ PORT="${SSH_PORT:-22}"
 
 NAMESPACE="${NAMESPACE:-kube-system}"
 SERVICE_NAME="${SERVICE_NAME:-my-headlamp}"
-HEADLAMP_PORT="${HEADLAMP_PORT:-8080}"
+HEADLAMP_PORT="${HEADLAMP_PORT:-4466}"
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-39.0.8}"
 REMOTE_DIR="${REMOTE_DIR:-/tmp/k8s-headlamp}"
 
