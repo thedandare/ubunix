@@ -1,3 +1,7 @@
+# Since Kubernetes 1.24 a ServiceAccount no longer gets a token Secret on its
+# own, so the never-expiring token used to log into Headlamp has to be asked
+# for explicitly. The token itself is filled in by the token controller, once
+# the headlamp-admin ServiceAccount exists (see create-service-acc-and-token.sh).
 apiVersion: v1
 kind: Secret
 metadata:

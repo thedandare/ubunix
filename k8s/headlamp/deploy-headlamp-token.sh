@@ -1,51 +1,75 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Check for at least one IP address
+# Creates the never-expiring token of the headlamp-admin ServiceAccount and
+# prints it, so it can be pasted into the Headlamp login screen.
+#
+#     ./deploy-headlamp-token.sh <server_ip_1> [server_ip_2 ...]
+
 if [ "$#" -lt 1 ]; then
   echo "Usage: $0 <server_ip_1> [server_ip_2 ...]"
   exit 1
 fi
 
-# SSH key: prefer Windows OpenSSH-compatible path (avoids libcrypto issues in Git Bash)
-# Detect if running under Git Bash (MSYSTEM set) or plain WSL/Linux
-# if [ -n "${MSYSTEM:-}" ]; then
-#   # Git Bash on Windows — use the Windows path directly so native Windows ssh.exe is picked up
-#   SSH_KEY="C:/Users/leo/.ssh/root_id_ed25519"
-#   SSH_CMD="/c/Windows/System32/OpenSSH/ssh.exe"
-#   if [ ! -f "$SSH_CMD" ]; then
-#     SSH_CMD="ssh"
-#   fi
-# el
-if [ -f "/root/.ssh/root_id_ed25519" ]; then
-  SSH_KEY="/root/.ssh/root_id_ed25519"
-  SSH_CMD="ssh"
-else
-  exit 1
+if [ -z "${SSH_KEY:-}" ]; then
+  for candidate in "$HOME/.ssh/root_id_ed25519" /root/.ssh/root_id_ed25519 /mnt/c/Users/leo/.ssh/root_id_ed25519; do
+    if [ -f "$candidate" ]; then
+      SSH_KEY="$candidate"
+      break
+    fi
+  done
 fi
-# Convert Windows path backslashes to forward slashes for compatibility in git bash/ssh command
-SSH_KEY_POSIX=$(echo "$SSH_KEY" | sed 's/\\/\//g')
+: "${SSH_KEY:?no ssh key found; set SSH_KEY=/path/to/root_id_ed25519}"
 
-PORT=22
+SSH_PORT="${SSH_PORT:-22}"
+NAMESPACE="${NAMESPACE:-kube-system}"
+REMOTE_DIR="${REMOTE_DIR:-/tmp/k8s-headlamp}"
+SSH_OPTS=(-i "$SSH_KEY" -p "$SSH_PORT" -o StrictHostKeyChecking=no -o ConnectTimeout=15)
 
-# Locate local directory of the script
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$(dirname "$0")"
 
 for IP in "$@"; do
   SSH_HOST="root@$IP"
+  remote() { ssh "${SSH_OPTS[@]}" "$SSH_HOST" "$@"; }
+
   echo "========================================================="
-  echo " Deploying headlamp to $SSH_HOST"
+  echo " Deploying the headlamp token to $SSH_HOST"
   echo "========================================================="
 
-  echo "=== Copying values and manifests to remote server ==="
-  "$SSH_CMD" -i "$SSH_KEY_POSIX" -p $PORT -o StrictHostKeyChecking=no "$SSH_HOST" "mkdir -p /tmp/k8s-headlamp"
-  "$SSH_CMD" -i "$SSH_KEY_POSIX" -p $PORT -o StrictHostKeyChecking=no "$SSH_HOST" "cat > /tmp/k8s-headlamp/headlamp-token.yaml" < "$DIR/headlamp-token.yaml"
+  # No ServiceAccount means the token controller has nothing to issue a token
+  # for, and the secret below then stays empty forever.
+  echo "=== Checking the headlamp-admin ServiceAccount ==="
+  remote "
+set -e
+microk8s kubectl -n $NAMESPACE get serviceaccount headlamp-admin >/dev/null 2>&1 \
+  || microk8s kubectl -n $NAMESPACE create serviceaccount headlamp-admin
+microk8s kubectl get clusterrolebinding headlamp-admin >/dev/null 2>&1 \
+  || microk8s kubectl create clusterrolebinding headlamp-admin \
+       --serviceaccount=$NAMESPACE:headlamp-admin --clusterrole=cluster-admin"
 
-  echo "=== Deploying headlamp permanent token  ==="
-  # Upgrade or install using OCI chart from Artifact Hub
-  "$SSH_CMD" -i "$SSH_KEY_POSIX" -p $PORT -o StrictHostKeyChecking=no "$SSH_HOST" \
-    "microk8s kubectl apply -f /tmp/k8s-headlamp/headlamp-token.yaml"
+  echo "=== Copying manifests to remote server ==="
+  remote "mkdir -p $REMOTE_DIR"
+  scp -i "$SSH_KEY" -P "$SSH_PORT" -o StrictHostKeyChecking=no \
+    headlamp-token.yaml "$SSH_HOST:$REMOTE_DIR/"
 
-  "$SSH_CMD" -i "$SSH_KEY_POSIX" -p $PORT -o StrictHostKeyChecking=no "$SSH_HOST" \
-    "microk8s kubectl -n kube-system get secret headlamp-admin-token -o jsonpath='{.data.token}' | base64 --decode"
+  echo "=== Deploying the headlamp permanent token ==="
+  remote "microk8s kubectl apply -f $REMOTE_DIR/headlamp-token.yaml"
+
+  # The token controller fills in .data.token asynchronously, so the secret can
+  # exist for a moment without one.
+  echo "=== Waiting for the token to be issued ==="
+  TOKEN=
+  for _ in $(seq 1 30); do
+    TOKEN=$(remote "microk8s kubectl -n $NAMESPACE get secret headlamp-admin-token -o jsonpath='{.data.token}'" 2>/dev/null || true)
+    [ -n "$TOKEN" ] && break
+    sleep 2
+  done
+  if [ -z "$TOKEN" ]; then
+    echo "ERROR: the token controller did not populate headlamp-admin-token" >&2
+    exit 1
+  fi
+
+  echo "=== Headlamp token for $IP ==="
+  echo "$TOKEN" | base64 --decode
+  echo
 done
