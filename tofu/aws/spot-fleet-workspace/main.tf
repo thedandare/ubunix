@@ -40,14 +40,14 @@ data "aws_ami" "nixos_x86_64" {
   }
 }
 
-#resource "aws_key_pair" "nixos" {
-#  key_name   = "${var.name}-key"
-#  public_key = local.ssh_public_keys[0]
+resource "aws_key_pair" "nixos" {
+  key_name   = "${var.name}-key"
+  public_key = local.ssh_public_keys[0]
 
-  #tags = {
-  #  Name = "${var.name}-key"
-  #}
-#}
+  tags = {
+    Name = "${var.name}-key"
+  }
+}
 
 resource "aws_iam_role" "spot_fleet_role" {
   name = "${var.name}-spot-fleet-role"
@@ -71,60 +71,60 @@ resource "aws_iam_role_policy_attachment" "spot_fleet_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2SpotFleetTaggingRole"
 }
 
-#resource "aws_security_group" "nixos" {
-#  name        = "${var.name}-sg"
-#  description = "NixOS bootstrap SSH ports"
-#
-#  ingress {
-#    description = "SSH default bootstrap"
-#    from_port   = 22
-#    to_port     = 22
-#    protocol    = "tcp"
-#    cidr_blocks = var.ssh_cidr_blocks
-#  }
-#
-#  ingress {
-#    description = "SSH custom port"
-#    from_port   = var.ssh_port
-#    to_port     = var.ssh_port
-#    protocol    = "tcp"
-#    cidr_blocks = var.ssh_cidr_blocks
-#  }
-#
-#  ingress {
-#    description = "MicroK8s join port (entre nodes do cluster)"
-#    from_port   = 25000
-#    to_port     = 25000
-#    protocol    = "tcp"
-#    cidr_blocks = ["0.0.0.0/0"]
-#  }
-#
-#  egress {
-#    description = "Allow outbound"
-#    from_port   = 0
-#    to_port     = 0
-#    protocol    = "-1"
-#    cidr_blocks = ["0.0.0.0/0"]
-#  }
-#
-#  tags = {
-#    Name = "${var.name}-sg"
-#  }
-#}
+resource "aws_security_group" "nixos" {
+  name        = "${var.name}-sg"
+  description = "NixOS bootstrap SSH ports"
+
+  ingress {
+    description = "SSH default bootstrap"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.ssh_cidr_blocks
+  }
+
+  ingress {
+    description = "SSH custom port"
+    from_port   = var.ssh_port
+    to_port     = var.ssh_port
+    protocol    = "tcp"
+    cidr_blocks = var.ssh_cidr_blocks
+  }
+
+  ingress {
+    description = "MicroK8s join port (entre nodes do cluster)"
+    from_port   = 25000
+    to_port     = 25000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    description = "Allow outbound"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.name}-sg"
+  }
+}
 
 # Na AMI NixOS oficial na AWS, user_data é interpretado pelo serviço amazon-init.
 # Spot fleet gerencia automaticamente as instâncias spot.
 resource "aws_launch_template" "nixos" {
   name_prefix   = "${var.name}-"
   image_id      = data.aws_ami.nixos_x86_64.id
-  #key_name      = aws_key_pair.nixos.key_name
+  key_name      = aws_key_pair.nixos.key_name
   instance_type = var.instance_type
 
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [ aws_security_group.efs.id]
+    security_groups             = [aws_security_group.nixos.id, aws_security_group.efs.id]
   }
-# aws_security_group.nixos.id,
+
 
   user_data = base64encode(templatefile("${path.module}/user_data.nix.tftpl", {
     ssh_port            = var.ssh_port

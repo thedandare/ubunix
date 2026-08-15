@@ -21,15 +21,7 @@
 #   https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-credits-baseline-concepts.html
 #   https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-performance-instances-monitoring-cpu-credits.html
 #
-set -uo pipefail
-
-# O que significa set -euo pipefail
-# São três (na verdade quatro) opções ligadas de uma vez:
-# -e (errexit) — encerra o script na hora em que qualquer comando retorna status diferente de zero (ou seja, "falhou"), sem você ter tratado esse erro. O detalhe traiçoeiro: no shell, "falhar" não é só erro grave. Um grep que não acha nada retorna 1. Uma comparação aritmética falsa (( x > 10 )) retorna 1. Um aws sem credencial retorna 1. Com -e, qualquer um desses fecha tudo imediatamente.
-# -u (nounset) — encerra se você usar uma variável que nunca foi definida. Ex.: se $REGION ainda não existe e você faz echo "$REGION", o script morre em vez de tratar como vazio.
-# -o pipefail — num pipe A | B | C, normalmente o shell só olha o status do último comando (C). Com pipefail, se qualquer etapa falhar, o pipe inteiro é considerado falho. Combinado com -e, isso derruba o script.
-# Então "fecha assim que inicia" geralmente é: logo no comecinho, algum comando retorna não-zero (um tput num terminal estranho, um aws sem permissão, uma aritmética que deu falsa), e o -e encerra tudo antes de qualquer tela aparecer.
-
+set -euo pipefail
 
 # ── Dependências ─────────────────────────────────────────────────────────────
 need() { command -v "$1" >/dev/null 2>&1 || { echo "Erro: '$1' não encontrado. $2" >&2; exit 1; }; }

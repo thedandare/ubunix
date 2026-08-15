@@ -1,7 +1,7 @@
 #cloud-config
 package_update: true
 package_upgrade: true
-hostname: amnix-${node_index}
+hostname: santiago${node_index}
 
 users:
   - name: root
@@ -44,28 +44,29 @@ write_files:
       Port ${ssh_port}
 
 runcmd:
-  - echo "=== Iniciando setup ===" >> /var/log/cloud-init-debug.log
-  - apt-get update >> /var/log/cloud-init-debug.log 2>&1
-  - apt-get install -y snapd jq curl libnetfilter-conntrack3 libnfnetlink0 iptables zfsutils-linux >> /var/log/cloud-init-debug.log 2>&1
+  - echo "=== Iniciando setup ===" 
+  - apt-get update 
+  - apt-get install -y snapd jq curl libnetfilter-conntrack3 libnfnetlink0 iptables zfsutils-linux 
 
-  - echo "=== Configurando snapd ===" >> /var/log/cloud-init-debug.log
-  - systemctl unmask snapd.service snapd.socket || true >> /var/log/cloud-init-debug.log 2>&1
-  - systemctl enable snapd.service snapd.socket || true >> /var/log/cloud-init-debug.log 2>&1
-  - systemctl start snapd.service snapd.socket || true >> /var/log/cloud-init-debug.log 2>&1
+  - echo "=== Configurando snapd ===" 
+  - systemctl unmask snapd.service snapd.socket || true 
+  - systemctl enable snapd.service snapd.socket || true 
+  - systemctl start snapd.service snapd.socket || true 
+  - hostnamectl hostname santiago${node_index}
 
-  - echo "=== Instalando LXD ===" >> /var/log/cloud-init-debug.log
-  - sleep 5
-  - snap install lxd >> /var/log/cloud-init-debug.log 2>&1
-  - sleep 5
-  - lxd init --auto >> /var/log/cloud-init-debug.log 2>&1
-  - sleep 5
-  - echo "=== LXD instalado com sucesso ===" >> /var/log/cloud-init-debug.log
+  # - echo "=== Instalando LXD ===" 
+  # - sleep 5
+  # - snap install lxd 
+  # - sleep 5
+  # - lxd init --auto 
+  # - sleep 5
+  # - echo "=== LXD instalado com sucesso ===" 
 
-  - echo "=== Instalando MicroK8s ===" >> /var/log/cloud-init-debug.log
-  - snap install microk8s --channel=1.36/stable --classic >> /var/log/cloud-init-debug.log 2>&1
+  - echo "=== Instalando MicroK8s ===" 
+  - snap install microk8s --channel=1.36/stable --classic 
   - sleep 5
-  - snap refresh --hold microk8s >> /var/log/cloud-init-debug.log 2>&1
-  - echo "=== MicroK8s instalado com sucesso ===" >> /var/log/cloud-init-debug.log
+  - snap refresh --hold microk8s 
+  - echo "=== MicroK8s instalado com sucesso ===" 
 
   - sed -i 's/snapshotter = ".*"/snapshotter = "overlayfs"/g' /var/snap/microk8s/current/args/containerd-template.toml
   - grep -qxF -- '--protect-kernel-defaults=false' /var/snap/microk8s/current/args/kubelet || echo '--protect-kernel-defaults=false' >> /var/snap/microk8s/current/args/kubelet
@@ -92,179 +93,12 @@ runcmd:
   - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
   - snap set system refresh.hold=forever
 
-  - snap restart microk8s &
+  # - snap restart microk8s &
 
-  - curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-kge4UdNXv311CNTRL-DHhyKVw9DD1Aj7dqNCrpD1KZsdpQh2K32
+  # - curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-kge4UdNXv311CNTRL-DHhyKVw9DD1Aj7dqNCrpD1KZsdpQh2K32
 
-  - curl -fsSL https://pkgs.netbird.io/install.sh | sh
-  - netbird up --setup-key 0F6C131F-EEC5-4AAE-A253-24E55AE27688
+  # - curl -fsSL https://pkgs.netbird.io/install.sh | sh
+  # - netbird up --setup-key 0F6C131F-EEC5-4AAE-A253-24E55AE27688
 
   - microk8s status --wait-ready
-
-  - systemctl restart sshd
-
-  - |
-    # Criar profile microk8s para LXC
-    cat <<'EOF' | sudo lxc profile edit microk8s
-    config:
-      boot.autostart: "true"
-      linux.kernel_modules: ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter
-      raw.lxc: |
-        lxc.apparmor.profile = unconfined
-        lxc.apparmor.allow_nesting = 1
-        lxc.cap.drop=
-        lxc.mount.auto=proc:rw sys:rw
-      security.nesting: "true"
-      security.privileged: "true"
-    description: MicroK8s LXC profile
-    devices:
-      eth0:
-        name: eth0
-        network: lxdbr0
-        type: nic
-      kmsg:
-        path: /dev/kmsg
-        source: /dev/kmsg
-        type: unix-char
-      root:
-        path: /
-        pool: default
-        type: disk
-    name: microk8s
-    EOF
-
-  - |
-    INCUS_CLOUD_INIT=$(cat <<'ENDINIT'
-    #cloud-config
-    package_update: true
-    package_upgrade: false
-    users:
-      - name: root
-        ssh_authorized_keys:
-          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICs+sOj/1GK5exkDkCw7H7zmDapshfWaRn474qxZxSUY leo"
-          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMGWvbEP/E0dh/xwtUVIuQrNDSz+G4TCLA+UMVpT0gLi root@ali"
-          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPlCOf70p6jujZf6ZdE7ugOQAPtpqteigxxaQb4RONs4 thedandare@gmail.com"
-          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO4x8pXKybfzCbc6IAd+HoPMW4vy3vT6ByGHM3uz4ApN leo@ali"
-    ssh_pwauth: true
-    chpasswd:
-      list:
-        - root:Senha171
-      expire: false
-    write_files:
-      - path: /etc/netplan/99-dns.yaml
-        permissions: '0644'
-        content: |
-          network:
-            version: 2
-            ethernets:
-              eth0:
-                dhcp4: true
-                nameservers:
-                  addresses:
-                    - 1.1.1.1
-                    - 8.8.8.8
-      - path: /etc/sysctl.d/99-kubernetes.conf
-        permissions: '0644'
-        content: |
-          net.ipv4.ip_forward = 1
-          fs.inotify.max_user_instances = 512
-          fs.inotify.max_user_watches = 524288
-          net.bridge.bridge-nf-call-iptables = 1
-          net.bridge.bridge-nf-call-ip6tables = 1
-    runcmd:
-      - apt-get update
-      - apt-get install -y snapd jq curl libnetfilter-conntrack3 libnfnetlink0 iptables zfsutils-linux
-
-      - systemctl unmask snapd.service snapd.socket || true
-      - systemctl enable snapd.service snapd.socket || true
-      - systemctl start snapd.service snapd.socket || true
-
-      - sleep 5
-      - snap install microk8s --channel=1.36/stable --classic
-      - sleep 5
-      - snap refresh --hold microk8s
-
-      - sed -i 's/snapshotter = ".*"/snapshotter = "overlayfs"/g' /var/snap/microk8s/current/args/containerd-template.toml
-      - grep -qxF -- '--protect-kernel-defaults=false' /var/snap/microk8s/current/args/kubelet || echo '--protect-kernel-defaults=false' >> /var/snap/microk8s/current/args/kubelet
-      - grep -qxF -- '--enforce-node-allocatable=""' /var/snap/microk8s/current/args/kubelet || echo '--enforce-node-allocatable=""' >> /var/snap/microk8s/current/args/kubelet
-
-      - mkdir -p /var/snap/microk8s/current/args/cni-network
-      - grep -qxF -- '--cni-conf-dir=/var/snap/microk8s/current/args/cni-network' /var/snap/microk8s/current/args/kubelet || echo '--cni-conf-dir=/var/snap/microk8s/current/args/cni-network' >> /var/snap/microk8s/current/args/kubelet
-
-      - sed -i '/^--proxy-mode=/d' /var/snap/microk8s/current/args/kube-proxy
-      - echo '--proxy-mode=nftables' >> /var/snap/microk8s/current/args/kube-proxy
-      - prlimit --pid=$$ --nofile=1048576:1048576 || true
-      - mkdir -p /etc/systemd/system/snap.microk8s.daemon-kubelite.service.d
-      - |
-        cat <<EOF > /etc/systemd/system/snap.microk8s.daemon-kubelite.service.d/override.conf
-        [Service]
-        LimitNOFILE=1048576
-        LimitNPROC=512000
-        EOF
-      - systemctl daemon-reload
-      - rm -f /var/snap/microk8s/current/var/kubernetes/backend/kine.sock
-      - chmod -R 777 /var/snap/microk8s/current/var/kubernetes/backend/
-
-      - sysctl --system
-      - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
-      - snap set system refresh.hold=forever
-
-      - snap restart microk8s &
-
-      - curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-kge4UdNXv311CNTRL-DHhyKVw9DD1Aj7dqNCrpD1KZsdpQh2K32
-
-      - curl -fsSL https://pkgs.netbird.io/install.sh | sh
-      - netbird up --setup-key 0F6C131F-EEC5-4AAE-A253-24E55AE27688
-
-      - microk8s status --wait-ready
-ENDINIT
-    )
-    - echo "=== Criando profile microk8s ===" >> /var/log/cloud-init-debug.log
-    - |
-      cat <<'EOF' | sudo lxc profile edit microk8s
-      config:
-        boot.autostart: "true"
-        linux.kernel_modules: ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter
-        raw.lxc: |
-          lxc.apparmor.profile = unconfined
-          lxc.apparmor.allow_nesting = 1
-          lxc.cap.drop=
-          lxc.mount.auto=proc:rw sys:rw
-        security.nesting: "true"
-        security.privileged: "true"
-      description: MicroK8s LXC profile
-      devices:
-        eth0:
-          name: eth0
-          network: lxdbr0
-          type: nic
-        kmsg:
-          path: /dev/kmsg
-          source: /dev/kmsg
-          type: unix-char
-        root:
-          path: /
-          pool: default
-          type: disk
-      name: microk8s
-      EOF
-    - echo "=== Profile criado, iniciando containers ===" >> /var/log/cloud-init-debug.log
-    - |
-      # Gera UUID único para esta instância
-      INSTANCE_UUID=$(cat /proc/sys/kernel/random/uuid | cut -c1-8)
-      
-      for i in 1 2 3; do
-        case $i in
-          1) NAME="amnix-"$INSTANCE_UUID"-1" ;;
-          2) NAME="amnix-"$INSTANCE_UUID"-2" ;;
-          3) NAME="amnix-"$INSTANCE_UUID"-3" ;;
-        esac
-        
-        if ! /snap/bin/lxc info $NAME >/dev/null 2>&1; then
-          echo "Criando container: $NAME" >> /var/log/cloud-init-debug.log
-          /snap/bin/lxc launch ubuntu:24.04 $NAME -p microk8s -c user.user-data="$INCUS_CLOUD_INIT" >> /var/log/cloud-init-debug.log 2>&1
-        else
-          echo "Container $NAME já existe" >> /var/log/cloud-init-debug.log
-        fi
-      done
-    - echo "=== Containers criados com sucesso ===" >> /var/log/cloud-init-debug.log
+ 

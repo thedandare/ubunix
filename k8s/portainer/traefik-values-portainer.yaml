@@ -1,0 +1,17 @@
+# Extra Traefik entrypoints used to publish Portainer on the LoadBalancer IPs.
+# Applied with: helm upgrade traefik traefik/traefik --reuse-values -f this-file
+ports:
+  portainer:
+    port: 9000
+    exposedPort: 9000
+    protocol: TCP
+    expose:
+      default: true
+  # 8000 inside the container is already taken by Traefik's 'web' entrypoint,
+  # so the edge entrypoint listens on 8001 and is published as 8000.
+  portainer-edge:
+    port: 8001
+    exposedPort: 8000
+    protocol: TCP
+    expose:
+      default: true

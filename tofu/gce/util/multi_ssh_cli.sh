@@ -33,13 +33,13 @@ runpane() {
 }
 
 if [[ $# -gt 0 ]]; then
-  runpane "$P0" "gcnix0" "$@"
-  runpane "$P1" "gcnix1" "$@"
-  runpane "$P2" "gcnix2" "$@"
+  runpane "$P0" "santnix0" "$@"
+  runpane "$P1" "santnix1" "$@"
+  runpane "$P2" "santnix2" "$@"
 else
-  runpane "$P0" "gcnix0"
-  runpane "$P1" "gcnix1"
-  runpane "$P2" "gcnix2"
+  runpane "$P0" "santnix0"
+  runpane "$P1" "santnix1"
+  runpane "$P2" "santnix2"
 fi
 
 tmux attach -t "$SESSION"

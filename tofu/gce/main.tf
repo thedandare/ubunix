@@ -162,7 +162,7 @@ resource "google_compute_address" "nixos" {
   network_tier = var.network_tier
 }
 
-# count=3 cria gcnix0, gcnix1, gcnix2 distribuidos pelas zonas de local.zones.
+# count=3 cria santnix0, santnix1, santnix2 distribuidos pelas zonas de local.zones.
 resource "google_compute_instance" "nixos" {
   count        = var.node_count
   name         = "${var.name}${count.index}"

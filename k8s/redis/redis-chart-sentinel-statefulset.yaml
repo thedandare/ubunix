@@ -1,0 +1,173 @@
+{{- if eq .Values.architecture "sentinel" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "redis.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "redis.labels" . | nindent 4 }}
+    app.kubernetes.io/component: node
+spec:
+  replicas: {{ .Values.sentinel.replicaCount }}
+  serviceName: {{ include "redis.headlessServiceName" . }}
+  podManagementPolicy: Parallel
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  selector:
+    matchLabels:
+      {{- include "redis.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: node
+  template:
+    metadata:
+      labels:
+        {{- include "redis.labels" . | nindent 8 }}
+        app.kubernetes.io/component: node
+        {{- with .Values.common.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.common.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      serviceAccountName: {{ include "redis.serviceAccountName" . }}
+      {{- include "redis.imagePullSecrets" . | nindent 6 }}
+      {{- with (include "redis.podSecurityContext" .) }}
+      securityContext:
+        {{- . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.common.priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with (include "redis.affinity" .) }}
+      affinity:
+        {{- . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.common.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.common.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.common.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      terminationGracePeriodSeconds: {{ .Values.common.terminationGracePeriodSeconds }}
+      {{- if .Values.volumePermissions.enabled }}
+      initContainers:
+        {{- include "redis.volumePermissionsInit" . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: redis
+          image: {{ include "redis.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with (include "redis.containerSecurityContext" .) }}
+          securityContext:
+            {{- . | nindent 12 }}
+          {{- end }}
+          command:
+            - /opt/redis/config/start-node.sh
+          ports:
+            - name: redis
+              containerPort: {{ .Values.redis.port }}
+          env:
+            {{- include "redis.authEnv" . | nindent 12 }}
+            {{- with .Values.common.extraEnvVars }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- if .Values.common.startupProbe.enabled }}
+          startupProbe:
+            exec:
+              command: ["sh", "-c", {{ include "redis.pingRedis" . | quote }}]
+            periodSeconds: {{ .Values.common.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.common.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.common.startupProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.common.livenessProbe.enabled }}
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", {{ include "redis.pingRedis" . | quote }}]
+            initialDelaySeconds: {{ .Values.common.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.common.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.common.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.common.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.common.readinessProbe.enabled }}
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", {{ include "redis.pingRedis" . | quote }}]
+            initialDelaySeconds: {{ .Values.common.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.common.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.common.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.common.readinessProbe.failureThreshold }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.common.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "redis.commonVolumeMounts" . | nindent 12 }}
+        - name: sentinel
+          image: {{ include "redis.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- with (include "redis.containerSecurityContext" .) }}
+          securityContext:
+            {{- . | nindent 12 }}
+          {{- end }}
+          command:
+            - /opt/redis/config/start-sentinel.sh
+          ports:
+            - name: sentinel
+              containerPort: {{ .Values.sentinel.port }}
+          env:
+            {{- include "redis.authEnv" . | nindent 12 }}
+          {{- if .Values.common.livenessProbe.enabled }}
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", {{ include "redis.pingSentinel" . | quote }}]
+            initialDelaySeconds: {{ .Values.common.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.common.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.common.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.common.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.common.readinessProbe.enabled }}
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", {{ include "redis.pingSentinel" . | quote }}]
+            initialDelaySeconds: {{ .Values.common.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.common.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.common.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.common.readinessProbe.failureThreshold }}
+          {{- end }}
+          resources:
+            {{- toYaml .Values.sentinel.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "redis.commonVolumeMounts" . | nindent 12 }}
+        {{- if .Values.metrics.enabled }}
+        {{- include "redis.exporterContainer" . | nindent 8 }}
+        {{- end }}
+      volumes:
+        {{- include "redis.commonVolumes" . | nindent 8 }}
+  {{- if .Values.persistence.enabled }}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          {{- include "redis.selectorLabels" . | nindent 10 }}
+        {{- with .Values.persistence.annotations }}
+        annotations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      spec:
+        accessModes:
+          {{- toYaml .Values.persistence.accessModes | nindent 10 }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size }}
+        {{- if .Values.persistence.storageClass }}
+        storageClassName: {{ .Values.persistence.storageClass }}
+        {{- end }}
+  {{- end }}
+{{- end }}

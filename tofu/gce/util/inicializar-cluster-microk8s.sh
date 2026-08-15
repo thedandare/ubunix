@@ -6,7 +6,7 @@ set -eo pipefail
 #
 # Objetivo:
 #   1) Escolher entre Tailscale ou Netbird para conectividade VPN
-#   2) Trabalhar com as 3 instancias fixas gcnix0, gcnix1, gcnix2
+#   2) Trabalhar com as 3 instancias fixas santnix0, santnix1, santnix2
 #   3) Selecionar a instancia MASTER
 #   4) Gerar um token por no no microk8s do host master (via add-node) e fazer join
 #   5) Juntar os containers LXD (node0, node1) do proprio master e de cada host
@@ -20,7 +20,7 @@ TOKEN_TTL=999999
 ZONE_BASE="southamerica-east1"
 
 # Instancias fixas do cluster
-NAMES=("gcnix0" "gcnix1" "gcnix2")
+NAMES=("santnix0" "santnix1" "santnix2")
 ZONE_LETTERS=(a b c)
 ZONES=("${ZONE_BASE}-${ZONE_LETTERS[0]}" "${ZONE_BASE}-${ZONE_LETTERS[1]}" "${ZONE_BASE}-${ZONE_LETTERS[2]}")
 

@@ -1,0 +1,35 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgres-server
+  namespace: default
+spec:
+  # 1 primary + 2 read replicas
+  instances: 3
+
+  postgresql:
+    parameters:
+      max_worker_processes: "60"
+    pg_hba:
+      # Password auth for every TCP client; credentials come from app-secret.
+      # (md5 here also accepts scram-sha-256 hashed passwords.)
+      - host all all all md5
+
+  # microk8s hostpath-storage addon provides the default storage class.
+  storage:
+    size: 5Gi
+    storageClass: microk8s-hostpath
+
+  # Clients connect as the "postgres" superuser, which CNPG disables by default:
+  # its password has to be managed explicitly, otherwise every password login
+  # fails with "password authentication failed for user postgres".
+  enableSuperuserAccess: true
+  superuserSecret:
+    name: app-secret
+
+  bootstrap:
+    initdb:
+      database: postgres
+      owner: postgres
+      secret:
+        name: app-secret

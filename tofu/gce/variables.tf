@@ -4,33 +4,33 @@ variable "project_id" {
 }
 
 variable "region" {
-  description = "Regiao GCP. Sao Paulo e southamerica-east1."
+  description = "Regiao GCP. Sao Paulo e southamerica-west1."
   type        = string
-  default     = "southamerica-east1"
+  default     = "southamerica-west1"
 }
 
 variable "zone" {
   description = "Zona GCP padrao. Usada pelo provider e como fallback quando a regiao tem apenas uma zona."
   type        = string
-  default     = "southamerica-east1-b"
+  default     = "southamerica-west1-b"
 }
 
 variable "name" {
   description = "Nome base da VM e dos recursos de rede."
   type        = string
-  default     = "gcnix"
+  default     = "santiago"
 }
 
 variable "node_count" {
-  description = "Quantidade de instancias NixOS a criar. count=3 cria gcnix0, gcnix1, gcnix2."
+  description = "Quantidade de instancias NixOS a criar. count=3 cria santnix0, santnix1, santnix2."
   type        = number
-  default     = 1
+  default     = 3
 }
 
 variable "machine_type" {
   description = "Tipo da instancia. Para Incus/MicroK8s, comece com pelo menos e2-standard-2 ou maior."
   type        = string
-  default     = "e2-standard-2"
+  default     = "t2d-standard-1"
 }
 
 variable "subnet_cidr" {
@@ -60,7 +60,7 @@ variable "nixos_image_self_link" {
 variable "boot_disk_size_gb" {
   description = "Tamanho do boot disk em GB."
   type        = number
-  default     = 60
+  default     = 40
 }
 
 variable "boot_disk_type" {
