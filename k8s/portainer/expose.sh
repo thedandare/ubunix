@@ -5,15 +5,13 @@ set -euo pipefail
 #   UI   -> :9000
 #   Edge -> :8000
 
-SSH_HOST="root@34.1.28.21"
+SSH_HOST="root@34.0.50.126"
 SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
 if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
   SSH_KEY="$HOME/.ssh/root_id_ed25519"
 fi
 PORT=22
 
-TRAEFIK_VERSION="${TRAEFIK_VERSION:-39.0.8}"
-TRAEFIK_REPO_URL="${TRAEFIK_REPO_URL:-https://traefik.github.io/charts}"
 REMOTE_DIR="/tmp/k8s-portainer"
 
 # Convert Windows path backslashes to forward slashes for compatibility in git bash/ssh command
@@ -25,30 +23,42 @@ cd "$(dirname "$0")"
 # ─── Step 1: Copy manifests ───────────────────────────────────────────────────
 echo "=== Copying manifests to remote server ==="
 "${SSH[@]}" "mkdir -p $REMOTE_DIR"
-"${SSH[@]}" "cat > $REMOTE_DIR/traefik-values-portainer.yaml" < traefik-values-portainer.yaml
 "${SSH[@]}" "cat > $REMOTE_DIR/expose.yaml" < expose.yaml
 
-# ─── Step 2: Helm upgrade Traefik (idempotent) ───────────────────────────────
-# Only runs if the 'portainer' entrypoint is not already in the DaemonSet args.
-TRAEFIK_HAS_PORTAINER=$("${SSH[@]}" \
-  "microk8s kubectl get daemonset/traefik -n ingress -o jsonpath='{.spec.template.spec.containers[0].args}' 2>/dev/null | grep -c entryPoints.portainer.address || true")
+# ─── Step 2: Add entrypoints to the MicroK8s-managed Traefik DaemonSet ────────
+# Traefik is installed by the MicroK8s addon, so do not use Helm here. The
+# addon-managed DaemonSet is patched idempotently with the two TCP entrypoints
+# and their host ports.
+"${SSH[@]}" bash <<'REMOTE'
+set -euo pipefail
 
-if [ "${TRAEFIK_HAS_PORTAINER:-0}" -eq 0 ] || [ -n "${FORCE_TRAEFIK_UPGRADE:-}" ]; then
-  echo "=== Upgrading Traefik via Helm to add 'portainer' entrypoints ==="
-  "${SSH[@]}" \
-    "set -e
-if ! microk8s helm repo list 2>/dev/null | awk 'NR > 1 && \$1 == \"traefik\" { found=1 } END { exit !found }'; then
-  echo '=== Adding the Traefik Helm repository ==='
-  microk8s helm repo add traefik $TRAEFIK_REPO_URL
-fi
-microk8s helm repo update
-microk8s helm upgrade traefik traefik/traefik --version $TRAEFIK_VERSION -n ingress --reuse-values --skip-schema-validation -f $REMOTE_DIR/traefik-values-portainer.yaml"
+DS=daemonset/traefik
+NS=ingress
 
-  echo "=== Waiting for Traefik DaemonSet rollout ==="
-  "${SSH[@]}" "microk8s kubectl rollout status daemonset/traefik -n ingress --timeout=180s"
-else
-  echo "=== Traefik already has 'portainer' entrypoints — skipping Helm upgrade ==="
-fi
+add_arg() {
+  local arg="$1"
+  if ! microk8s kubectl get "$DS" -n "$NS" -o jsonpath='{.spec.template.spec.containers[0].args}' | grep -Fq -- "$arg"; then
+    microk8s kubectl patch "$DS" -n "$NS" --type=json \
+      -p "[{\"op\":\"add\",\"path\":\"/spec/template/spec/containers/0/args/-\",\"value\":\"$arg\"}]"
+  fi
+}
+
+add_port() {
+  local name="$1" container_port="$2" host_port="$3"
+  if ! microk8s kubectl get "$DS" -n "$NS" \
+      -o jsonpath='{.spec.template.spec.containers[0].ports[*].name}' | grep -Fqw "$name"; then
+    microk8s kubectl patch "$DS" -n "$NS" --type=json \
+      -p "[{\"op\":\"add\",\"path\":\"/spec/template/spec/containers/0/ports/-\",\"value\":{\"name\":\"$name\",\"containerPort\":$container_port,\"hostPort\":$host_port,\"protocol\":\"TCP\"}}]"
+  fi
+}
+
+add_arg '--entryPoints.portainer.address=:9000/tcp'
+add_arg '--entryPoints.portainer-edge.address=:8001/tcp'
+add_port portainer 9000 9000
+add_port portainer-edge 8001 8000
+
+microk8s kubectl rollout status "$DS" -n "$NS" --timeout=180s
+REMOTE
 
 # ─── Step 3: Apply IngressRouteTCP ────────────────────────────────────────────
 echo "=== Applying IngressRouteTCP ==="
@@ -61,8 +71,9 @@ echo "=== Verification ==="
 echo "--- Traefik pods ---"
 microk8s kubectl get pods -n ingress -o wide
 echo ""
-echo "--- Traefik service ports ---"
-microk8s kubectl get svc traefik -n ingress -o jsonpath='{range .spec.ports[*]}{.name}:{.port}  {end}' && echo ""
+echo "--- Traefik entrypoint ports ---"
+microk8s kubectl get daemonset traefik -n ingress \
+  -o jsonpath='{range .spec.template.spec.containers[0].ports[*]}{.name}:host{.hostPort}->container{.containerPort}  {end}' && echo ""
 echo ""
 echo "--- IngressRoute / IngressRouteTCP ---"
 microk8s kubectl get ingressroute,ingressroutetcp -n portainer
