@@ -30,11 +30,12 @@ echo "=== Copying manifests to remote server ==="
 "${SSH[@]}" "cat > $REMOTE_DIR/expose.yaml" < expose.yaml
 
 # ─── Step 2: Helm upgrade Traefik (idempotent) ───────────────────────────────
-# Only runs if the 'postgres' entrypoint is not already in the DaemonSet args.
-TRAEFIK_HAS_POSTGRES=$("${SSH[@]}" \
-  "microk8s kubectl get daemonset/traefik -n ingress -o jsonpath='{.spec.template.spec.containers[0].args}' 2>/dev/null | grep -c entryPoints.postgres.address || true")
+# Only runs if the DaemonSet does not already bind hostPort 5432 for the
+# 'postgres' entrypoint.
+TRAEFIK_POSTGRES_HOSTPORT=$("${SSH[@]}" \
+  "microk8s kubectl get daemonset/traefik -n ingress -o jsonpath='{range .spec.template.spec.containers[0].ports[?(@.name==\"postgres\")]}{.hostPort}{end}' 2>/dev/null || true")
 
-if [ "${TRAEFIK_HAS_POSTGRES:-0}" -eq 0 ] || [ -n "${FORCE_TRAEFIK_UPGRADE:-}" ]; then
+if [ "${TRAEFIK_POSTGRES_HOSTPORT:-}" != "5432" ] || [ -n "${FORCE_TRAEFIK_UPGRADE:-}" ]; then
   echo "=== Upgrading Traefik via Helm to add the 'postgres' entrypoint ==="
   "${SSH[@]}" \
     "microk8s helm upgrade traefik traefik/traefik --version $TRAEFIK_VERSION -n ingress --reuse-values --skip-schema-validation -f $REMOTE_DIR/traefik-values-psql.yaml"
@@ -71,5 +72,5 @@ echo "=== PostgreSQL is now exposed via Traefik ==="
 echo "    in-cluster : $CLUSTER_NAME-rw.$NAMESPACE.svc:5432"
 echo "    external   : 34.1.25.177:5432 / 34.1.28.21:5432 / 34.1.17.21:5432"
 echo "    connect    : PGPASSWORD=\$(./get_app_secret.sh) psql -h 34.1.25.177 -U postgres postgres"
-echo "    NOTE: the cloud firewall only allows 443 from outside the cluster;"
-echo "          5432 is reachable from the node/VPN only."
+echo "    NOTE: reachable from the internet only while the cloud firewall keeps"
+echo "          tcp:5432 open for the node tag (gcnix-ssh on GCE)."

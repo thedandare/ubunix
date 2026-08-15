@@ -1,9 +1,16 @@
-# Extra Traefik entrypoint used to publish PostgreSQL on the LoadBalancer IPs.
+# Extra Traefik entrypoint used to publish PostgreSQL on the node IPs.
 # Applied with: helm upgrade traefik traefik/traefik --reuse-values -f this-file
+#
+# hostPort is what actually makes 5432 reachable from outside GCE: the service
+# externalIPs only match packets whose destination is literally one of those
+# addresses, and GCE NATs the public IP to the instance's internal IP before it
+# reaches the node. The 'web'/'websecure' entrypoints work from the internet for
+# the same reason — they bind hostPort 80/443.
 ports:
   postgres:
     port: 5432
     exposedPort: 5432
+    hostPort: 5432
     protocol: TCP
     expose:
       default: true
