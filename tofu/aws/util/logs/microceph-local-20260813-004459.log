@@ -1,0 +1,22 @@
+[2026-08-13 00:44:59] Validando dependencias locais...
+[2026-08-13 00:44:59] Verificando containers Incus...
+[2026-08-13 00:44:59]   leonk7s: RUNNING
+[2026-08-13 00:44:59]   leonk8s: RUNNING
+[2026-08-13 00:44:59]   leonk9s: RUNNING
+[2026-08-13 00:44:59] Obtendo IPs locais dos containers via eth0...
+[2026-08-13 00:44:59]   leonk7s -> 192.168.2.7
+[2026-08-13 00:45:00]   leonk8s -> 192.168.2.8
+[2026-08-13 00:45:00]   leonk9s -> 192.168.2.9
+[2026-08-13 00:45:00] Obtendo hostnames dos containers...
+[2026-08-13 00:45:00]   leonk7s hostname: leonk7s
+[2026-08-13 00:45:00]   leonk8s hostname: leonk8s
+[2026-08-13 00:45:00]   leonk9s hostname: leonk9s
+[2026-08-13 00:45:00] Verificando cluster MicroCeph existente no master...
+[2026-08-13 00:45:01] Membros atuais: []
+[2026-08-13 00:45:01] --- Executando bootstrap do MicroCeph no master ---
+[2026-08-13 00:45:01] >>> [leonk7s] Bootstrap do MicroCeph
+[2026-08-13 00:45:01] Copiando microceph_bootstrap.sh para leonk7s:/tmp/microceph_bootstrap.sh
+Error: Failed to open target file "/tmp/microceph_bootstrap.sh": permission denied
+[2026-08-13 00:45:01] ERRO: Falha ao copiar script para container leonk7s
+[2026-08-13 00:45:01] ERRO: Bootstrap falhou
+[2026-08-13 00:45:01] Limpando arquivos temporarios...

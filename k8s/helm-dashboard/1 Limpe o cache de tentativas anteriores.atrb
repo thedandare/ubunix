@@ -1,0 +1,215 @@
+id: 019f92d2-d819-7080-bf05-2a24e812fb6b
+name: '1. Limpe o cache de tentativas anteriores:'
+version: 1
+forkedFrom: null
+content:
+- id: f6596d68-4414-48f3-b502-eb54c9a00b17
+  type: heading
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+    level: 1
+    isToggleable: false
+  content: []
+  children: []
+- id: bf9d05f9-8f2f-4721-a30f-7cad781bd708
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: '1. Limpe o cache de tentativas anteriores:'
+    styles:
+      bold: true
+  children: []
+- id: 8c21dfa1-c450-46e5-b156-dea1ea47c50e
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: bash
+    styles:
+      bold: true
+  children: []
+- id: a8aee03b-b435-439f-b05b-4f8243b73f06
+  type: codeBlock
+  props:
+    language: text
+  content:
+  - type: text
+    text: |
+      rm -rf /root/.cache/helm/plugins/https-github.com-komodorio-helm-dashboard.git
+    styles: {}
+  children: []
+- id: 5a11711b-e45c-433a-8f03-6169d2507263
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: Use o código com cuidado.
+    styles: {}
+  children: []
+- id: 5d7fba79-7b14-4848-a8a3-893e6c16c94d
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: 2. Baixe o repositório usando o Git do host
+    styles:
+      bold: true
+  - type: text
+    text: ' (que criará a pasta com o nome esperado pelo Helm):'
+    styles: {}
+  children: []
+- id: 39e720a2-8eb3-4685-aede-502e5345a299
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: bash
+    styles:
+      bold: true
+  children: []
+- id: ca0e2152-f3b6-46d5-b159-4c207c173464
+  type: codeBlock
+  props:
+    language: text
+  content:
+  - type: text
+    text: |
+      git clone https://github.com/komodorio/helm-dashboard.git /root/.cache/helm/plugins/https-github.com-komodorio-helm-dashboard.git
+    styles: {}
+  children: []
+- id: 7c2c1b5f-05ee-447f-8104-5f8f0e5bf4c8
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: Use o código com cuidado.
+    styles: {}
+  children: []
+- id: 4802fa0e-565d-4b2e-aaa6-4a26d0347c68
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: '3. Instale o plugin apontando para a pasta local clonada:'
+    styles:
+      bold: true
+  children: []
+- id: 0544c596-3e34-47c1-a58b-41c0d25a7a11
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: bash
+    styles:
+      bold: true
+  children: []
+- id: fa6514a2-23ca-48e1-ac5f-30acfd5653ea
+  type: codeBlock
+  props:
+    language: text
+  content:
+  - type: text
+    text: |
+      microk8s helm plugin install /root/.cache/helm/plugins/https-github.com-komodorio-helm-dashboard.git
+    styles: {}
+  children: []
+- id: ff88cb40-a72b-41a7-bcd4-2bed5636f3db
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: Use o código com cuidado.
+    styles: {}
+  children: []
+- id: 2723c502-b50d-4c6f-9e06-e563bc22a9e5
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: '4. Confirme se o plugin foi registrado:'
+    styles:
+      bold: true
+  children: []
+- id: ab0aeb8b-6e12-4b4d-9e4e-dad6c4c5420a
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content:
+  - type: text
+    text: bash
+    styles:
+      bold: true
+  children: []
+- id: e045f114-32fe-45f1-9f8a-fee357d477f3
+  type: codeBlock
+  props:
+    language: text
+  content:
+  - type: text
+    text: microk8s helm plugin list
+    styles: {}
+  children: []
+- id: 797bdaf1-2fc1-47a1-bc9e-8adfe21dabc6
+  type: run
+  props:
+    type: bash
+    name: Terminal 1
+    code: |
+      microk8s helm dashboard --bind 0.0.0.0 --no-browser --port 8082
+    pty: ''
+    global: false
+    outputVisible: true
+    dependency: '{}'
+    terminalRows: 20
+  children: []
+- id: b18a9bd6-c1f5-4553-98bc-8eed73d6d763
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content: []
+  children: []
+- id: ea51257a-7671-447b-a24a-7be9e3daf245
+  type: paragraph
+  props:
+    backgroundColor: default
+    textColor: default
+    textAlignment: left
+  content: []
+  children: []

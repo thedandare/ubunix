@@ -1,0 +1,1 @@
+./inicializar-cluster-microceph-v2.sh: line 50: /tmp/inicializar-cluster-microceph.lock: Permission denied
