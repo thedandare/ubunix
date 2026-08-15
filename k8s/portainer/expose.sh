@@ -13,6 +13,7 @@ fi
 PORT=22
 
 TRAEFIK_VERSION="${TRAEFIK_VERSION:-39.0.8}"
+TRAEFIK_REPO_URL="${TRAEFIK_REPO_URL:-https://traefik.github.io/charts}"
 REMOTE_DIR="/tmp/k8s-portainer"
 
 # Convert Windows path backslashes to forward slashes for compatibility in git bash/ssh command
@@ -35,7 +36,13 @@ TRAEFIK_HAS_PORTAINER=$("${SSH[@]}" \
 if [ "${TRAEFIK_HAS_PORTAINER:-0}" -eq 0 ] || [ -n "${FORCE_TRAEFIK_UPGRADE:-}" ]; then
   echo "=== Upgrading Traefik via Helm to add 'portainer' entrypoints ==="
   "${SSH[@]}" \
-    "microk8s helm upgrade traefik traefik/traefik --version $TRAEFIK_VERSION -n ingress --reuse-values --skip-schema-validation -f $REMOTE_DIR/traefik-values-portainer.yaml"
+    "set -e
+if ! microk8s helm repo list 2>/dev/null | awk 'NR > 1 && \$1 == \"traefik\" { found=1 } END { exit !found }'; then
+  echo '=== Adding the Traefik Helm repository ==='
+  microk8s helm repo add traefik $TRAEFIK_REPO_URL
+fi
+microk8s helm repo update
+microk8s helm upgrade traefik traefik/traefik --version $TRAEFIK_VERSION -n ingress --reuse-values --skip-schema-validation -f $REMOTE_DIR/traefik-values-portainer.yaml"
 
   echo "=== Waiting for Traefik DaemonSet rollout ==="
   "${SSH[@]}" "microk8s kubectl rollout status daemonset/traefik -n ingress --timeout=180s"
