@@ -1,0 +1,129 @@
+#cloud-config
+package_update: true
+package_upgrade: false
+
+disable_root: false
+ssh_pwauth: false
+
+users:
+  - name: root
+    ssh_authorized_keys:
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICs+sOj/1GK5exkDkCw7H7zmDapshfWaRn474qxZxSUY leo"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMGWvbEP/E0dh/xwtUVIuQrNDSz+G4TCLA+UMVpT0gLi root@ali"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPlCOf70p6jujZf6ZdE7ugOQAPtpqteigxxaQb4RONs4 thedandare@gmail.com"
+      - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO4x8pXKybfzCbc6IAd+HoPMW4vy3vT6ByGHM3uz4ApN leo@ali"
+
+write_files:
+  - path: /etc/tailscale_oauth.env
+    permissions: '0600'
+    owner: root:root
+    content: |
+      TAILSCALE_CLIENT_ID=""
+      TAILSCALE_CLIENT_SECRET=""
+
+  - path: /etc/sysctl.d/99-kubernetes.conf
+    permissions: '0644'
+    owner: root:root
+    content: |
+      net.ipv4.ip_forward = 1
+      fs.inotify.max_user_instances = 512
+      fs.inotify.max_user_watches = 524288
+      net.bridge.bridge-nf-call-iptables = 1
+      net.bridge.bridge-nf-call-ip6tables = 1
+
+  - path: /usr/local/bin/microceph_cluster_join.sh
+    permissions: '0755'
+    owner: root:root
+    encoding: b64
+    content: INJECT_MICROCEPH_B64_HERE
+
+  - path: /usr/local/bin/autoconnect-tailscale.sh
+    permissions: '0755'
+    owner: root:root
+    encoding: b64
+    content: INJECT_TAILSCALE_B64_HERE
+
+  - path: /root/.xsession
+    permissions: '0744'
+    owner: root:root
+    content: |
+      xfce4-session
+
+  - path: /etc/X11/Xwrapper.config
+    permissions: '0644'
+    owner: root:root
+    content: |
+      allowed_users=anybody
+
+  - path: /root/.vnc/xstartup
+    permissions: '0755'
+    owner: root:root
+    content: |
+      #!/bin/sh
+      autocutsel -s CLIPBOARD -fork || true
+      autocutsel -s PRIMARY -fork || true
+      exec xfce4-session
+
+runcmd:
+  - apt-get update
+  - apt-get install -y snapd
+  - systemctl unmask snapd.service snapd.socket || true
+  - systemctl enable snapd.service snapd.socket || true
+  - systemctl start snapd.service snapd.socket || true
+  - |
+    for i in $(seq 1 30); do
+      if snap version >/dev/null 2>&1; then
+        echo "snapd respondendo."
+        break
+      fi
+      echo "Aguardando snapd... $i/30"
+      sleep 2
+    done
+  - apt-get install -y util-linux jq curl nftables net-tools socat tigervnc-standalone-server openbox autocutsel xfce4 xfce4-goodies
+
+  # VNC local dentro do container. Exposicao externa fica via Tailscale serve/funnel.
+  - mkdir -p /root/.vnc
+  - printf "Senha171\nSenha171\n" | vncpasswd -f > /root/.vnc/passwd
+  - chmod 0600 /root/.vnc/passwd
+  - echo "localhost=no" > /root/.vnc/config
+  - vncserver :1 -geometry 1280x720 -rfbauth /root/.vnc/passwd || true
+  - sleep 2
+  - vncserver :2 -geometry 1280x720 -rfbauth /root/.vnc/passwd || true
+
+  # Tailscale vem antes do MicroK8s para o node IP ser a interface tailscale0.
+  - curl -fsSL https://tailscale.com/install.sh | sh
+  - sleep 2
+  - /usr/local/bin/autoconnect-tailscale.sh
+
+  # MicroK8s 1.36 em Ubuntu dentro do Incus.
+  - snap install microk8s --channel=1.36/stable --classic
+  - snap refresh --hold microk8s
+
+  # MicroCeph fica stub nesta fase k8s-only.
+  - /usr/local/bin/microceph_cluster_join.sh || true
+
+  # Compatibilidade cgroup v2/nftables/containerd dentro de Incus.
+  - sed -i 's/snapshotter = "${SNAPSHOTTER}"/snapshotter = "overlayfs"/g' /var/snap/microk8s/current/args/containerd-template.toml || true
+  - grep -qxF -- '--protect-kernel-defaults=false' /var/snap/microk8s/current/args/kubelet || echo '--protect-kernel-defaults=false' >> /var/snap/microk8s/current/args/kubelet
+  - grep -qxF -- '--enforce-node-allocatable=""' /var/snap/microk8s/current/args/kubelet || echo '--enforce-node-allocatable=""' >> /var/snap/microk8s/current/args/kubelet
+  - sed -i '/^--proxy-mode=/d' /var/snap/microk8s/current/args/kube-proxy || true
+  - echo '--proxy-mode=nftables' >> /var/snap/microk8s/current/args/kube-proxy
+
+  # Evita erro gRPC/kine fechado por limite baixo de descritores.
+  - mkdir -p /etc/systemd/system/snap.microk8s.daemon-kubelite.service.d
+  - |
+    cat >/etc/systemd/system/snap.microk8s.daemon-kubelite.service.d/override.conf <<'OVERRIDE'
+    [Service]
+    LimitNOFILE=1048576
+    LimitNPROC=512000
+    OVERRIDE
+  - systemctl daemon-reload
+  - rm -f /var/snap/microk8s/current/var/kubernetes/backend/kine.sock || true
+  - chmod -R 777 /var/snap/microk8s/current/var/kubernetes/backend/ || true
+
+  - sysctl --system
+  - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
+  - snap set system refresh.hold=forever
+  - snap restart microk8s
+  - microk8s status --wait-ready
+  - microk8s kubectl get nodes -o wide || true

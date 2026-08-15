@@ -1,0 +1,14 @@
+persistence:
+  downloads:
+    enabled: true
+    type: pvc
+    existingClaim: qbittorrent-downloads
+
+    # Dentro do NFS /st40-ext4,
+    # usar somente o diretório torrent
+    subPath: torrent
+
+    # Caminho visto pelo qBittorrent
+    mountPath: /downloads
+
+    readOnly: false

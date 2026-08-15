@@ -1,0 +1,32 @@
+Firewall Port Forwarding Configuration (NAT / Port Forwarding)
+=============================================================
+
+External Public IP: 191.191.30.166
+
+Kubernetes Cluster Nodes IPs:
+- hyperk8s:  192.168.0.178
+- kub:       192.168.0.15
+- hyperk9s:  192.168.0.177
+- leonk28s:  192.168.0.28
+- leonk29s:  192.168.0.29
+- leonk27s:  192.168.0.27
+
+Since the Ingress Controller (Traefik/Nginx Ingress) runs as a DaemonSet, ports 80 and 443 are open on ALL of these nodes. You can configure the port forwarding to point to ANY of these IPs.
+
+To ensure high availability (HA), you can:
+Option A: Forward ports 80 and 443 to a load balancer or Virtual IP (VIP) (if using keepalived / kube-vip).
+Option B: Map the firewall to a primary node (e.g., hyperk8s - 192.168.0.178) as the active gateway.
+
+Port Forwarding Rules (using Node hyperk8s as example):
+
+1. HTTP Traffic:
+   - External Port: 80
+   - Protocol: TCP
+   - Forward to Internal IP: 192.168.0.178 (or any other active Node IP from list above)
+   - Internal Port: 80
+
+2. HTTPS Traffic:
+   - External Port: 443
+   - Protocol: TCP
+   - Forward to Internal IP: 192.168.0.178 (or any other active Node IP from list above)
+   - Internal Port: 443

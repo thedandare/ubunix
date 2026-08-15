@@ -1,0 +1,401 @@
+{ config, pkgs, lib, ... }:
+
+let
+  
+  cloudInitConfig = ''
+    #cloud-config
+    package_update: true
+    package_upgrade: true
+
+    users:
+      - name: root
+        ssh_authorized_keys:
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICs+sOj/1GK5exkDkCw7H7zmDapshfWaRn474qxZxSUY leo"
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMGWvbEP/E0dh/xwtUVIuQrNDSz+G4TCLA+UMVpT0gLi root@ali"
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPlCOf70p6jujZf6ZdE7ugOQAPtpqteigxxaQb4RONs4 thedandare@gmail.com"
+          - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO4x8pXKybfzCbc6IAd+HoPMW4vy3vT6ByGHM3uz4ApN leo@ali"
+
+    ssh_pwauth: true
+    chpasswd:
+      list:
+        - root:Senha171
+      expire: false
+
+    write_files:
+      - path: /etc/sysctl.d/99-kubernetes.conf
+        permissions: '0644'
+        content: |
+          net.ipv4.ip_forward = 1
+          fs.inotify.max_user_instances = 512
+          fs.inotify.max_user_watches = 524288
+          net.bridge.bridge-nf-call-iptables = 1
+          net.bridge.bridge-nf-call-ip6tables = 1
+
+      # Correção confirmada manualmente neste ambiente:
+      # faz o caminho usado pelo MicroK8s executar iptables-nft.
+      - path: /usr/local/sbin/microk8s-bind-iptables-nft
+        permissions: '0755'
+        owner: root:root
+        content: |
+          #!/usr/bin/env bash
+          set -euo pipefail
+
+          SOURCE=/snap/microk8s/current/sbin/iptables-nft
+          TARGET=/snap/microk8s/current/sbin/iptables
+
+          [ -x "$SOURCE" ]
+          [ -e "$TARGET" ]
+
+          # Já está correto: não altera nada.
+          if "$TARGET" --version 2>&1 | grep -q 'nf_tables' &&
+             "$TARGET" -t nat -S >/dev/null 2>&1; then
+            exit 0
+          fi
+
+          # Remove somente um bind anterior inválido, quando existir.
+          umount "$TARGET" >/dev/null 2>&1 || true
+
+          mount --bind "$SOURCE" "$TARGET"
+
+          # Falha imediatamente caso o backend NAT nftables não esteja utilizável.
+          "$TARGET" --version 2>&1 | grep -q 'nf_tables'
+          "$TARGET" -t nat -S >/dev/null
+
+      # Reaplica o bind sempre que o containerd for iniciado ou reiniciado.
+      - path: /etc/systemd/system/snap.microk8s.daemon-containerd.service.d/20-iptables-nft.conf
+        permissions: '0644'
+        owner: root:root
+        content: |
+          [Service]
+          ExecStartPre=/usr/local/sbin/microk8s-bind-iptables-nft
+
+      # Reaplica também antes do kubelite.
+      - path: /etc/systemd/system/snap.microk8s.daemon-kubelite.service.d/20-iptables-nft.conf
+        permissions: '0644'
+        owner: root:root
+        content: |
+          [Service]
+          ExecStartPre=/usr/local/sbin/microk8s-bind-iptables-nft
+
+    runcmd:
+      - apt-get update
+      - apt-get install -y snapd jq curl libnetfilter-conntrack3 libnfnetlink0 iptables
+     
+      - systemctl unmask snapd.service snapd.socket || true
+      - systemctl enable snapd.service snapd.socket || true
+      - systemctl start snapd.service snapd.socket || true
+
+      - sleep 5
+      - snap install microk8s --channel=1.36/stable --classic
+      - sleep 5
+     
+      - snap refresh --hold microk8s
+      - sleep 5
+
+      - sed -i 's/snapshotter = "''$${SNAPSHOTTER}"/snapshotter = "overlayfs"/g' /var/snap/microk8s/current/args/containerd-template.toml
+      - grep -qxF -- '--protect-kernel-defaults=false' /var/snap/microk8s/current/args/kubelet || echo '--protect-kernel-defaults=false' >> /var/snap/microk8s/current/args/kubelet
+      - grep -qxF -- '--enforce-node-allocatable=""' /var/snap/microk8s/current/args/kubelet || echo '--enforce-node-allocatable=""' >> /var/snap/microk8s/current/args/kubelet
+
+      - mkdir -p /var/snap/microk8s/current/args/cni-network
+      - grep -qxF -- '--cni-conf-dir=/var/snap/microk8s/current/args/cni-network' /var/snap/microk8s/current/args/kubelet || echo '--cni-conf-dir=/var/snap/microk8s/current/args/cni-network' >> /var/snap/microk8s/current/args/kubelet
+
+      # ------------------------------------------------------------------------
+      # Força o CNI e o kubelite a usarem iptables sobre nftables.
+      #
+      # O MicroK8s empacota iptables-legacy dentro do snap e coloca esse
+      # diretório no PATH. Em kernels somente nftables, o plugin CNI portmap
+      # falha ao criar a tabela nat.
+      # ------------------------------------------------------------------------
+      - mkdir -p /opt/microk8s-nft-bin
+
+      - ln -sf /snap/microk8s/current/sbin/iptables-nft /opt/microk8s-nft-bin/iptables
+      - ln -sf /snap/microk8s/current/sbin/ip6tables-nft /opt/microk8s-nft-bin/ip6tables
+      - ln -sf /snap/microk8s/current/sbin/iptables-nft-save /opt/microk8s-nft-bin/iptables-save
+      - ln -sf /snap/microk8s/current/sbin/iptables-nft-restore /opt/microk8s-nft-bin/iptables-restore
+      - ln -sf /snap/microk8s/current/sbin/ip6tables-nft-save /opt/microk8s-nft-bin/ip6tables-save
+      - ln -sf /snap/microk8s/current/sbin/ip6tables-nft-restore /opt/microk8s-nft-bin/ip6tables-restore
+
+      # Link adicional usado por configurações específicas do CNI.
+      - ln -sf /snap/microk8s/current/sbin/iptables-nft /var/snap/microk8s/current/args/cni-network/iptables
+
+      - sed -i '/^--proxy-mode=/d' /var/snap/microk8s/current/args/kube-proxy
+      - echo '--proxy-mode=nftables' >> /var/snap/microk8s/current/args/kube-proxy
+      - prlimit --pid=$$ --nofile=1048576:1048576 || true
+      - mkdir -p /etc/systemd/system/snap.microk8s.daemon-kubelite.service.d
+      - |
+        cat <<EOF > /etc/systemd/system/snap.microk8s.daemon-kubelite.service.d/override.conf
+        [Service]
+        LimitNOFILE=1048576
+        LimitNPROC=512000
+        # O CNI portmap procura "iptables" no PATH. Este diretório precisa vir
+        # antes de /snap/microk8s/current/sbin, que aponta para iptables-legacy.
+        Environment="PATH=/opt/microk8s-nft-bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/microk8s/current/sbin"
+        EOF
+      - systemctl daemon-reload
+      - rm -f /var/snap/microk8s/current/var/kubernetes/backend/kine.sock
+      - chmod -R 777 /var/snap/microk8s/current/var/kubernetes/backend/
+
+      - sysctl --system
+      - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
+      - snap set system refresh.hold=forever
+
+      # Aplica exatamente o bind mount que foi validado manualmente.
+      - /usr/local/sbin/microk8s-bind-iptables-nft
+      - /snap/microk8s/current/sbin/iptables -t nat -S >/dev/null
+
+      - snap restart microk8s 
+
+      - curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-kge4UdNXv311CNTRL-DHhyKVw9DD1Aj7dqNCrpD1KZsdpQh2K32
+      
+      - curl -fsSL https://pkgs.netbird.io/install.sh | sh
+      - netbird up --setup-key 0F6C131F-EEC5-4AAE-A253-24E55AE27688
+
+
+      - microk8s status --wait-ready
+    
+  '';
+
+  networkConfig = ''\n    version: 2\n    ethernets:\n      eth0:\n        dhcp4: true\n        nameservers:\n          addresses:\n            - 1.1.1.1\n            - 8.8.8.8\n  '';
+in
+{
+  imports = [ <nixpkgs/nixos/modules/virtualisation/amazon-image.nix> ];
+
+  #networking.hostName = "amnix";
+  networking.nftables.enable = true;
+
+  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+
+  networking.bridges."br0" = {
+    interfaces = [ ];
+  };
+  networking.interfaces."br0" = {
+    useDHCP = false;
+    ipv4.addresses = [{ address = "192.168.100.1"; prefixLength = 24; }];
+  };
+
+  services.dnsmasq = {
+    enable = true;
+    settings = {
+      interface = "br0";
+      bind-interfaces = true;
+      dhcp-range = "192.168.100.10,192.168.100.99,12h";
+      dhcp-option = [
+        "3,192.168.100.1"
+        "6,172.31.0.2,1.1.1.1"
+      ];
+    };
+  };
+  networking.nameservers = [
+    "172.31.0.2" 
+    "1.1.1.1"
+    ];
+ 
+ # libera a rede em Bridge para o QEMU
+  security.wrappers.qemu-bridge-helper = {
+    setuid = true;
+    owner = "root";
+    group = "root";
+    source = "$${pkgs.qemu}/libexec/qemu-bridge-helper";
+  };
+ # E configure quais bridges são permitidas criando o arquivo de ACL do QEMU:
+  environment.etc."qemu/bridge.conf".text = ''
+    allow br0
+  '';
+  networking.firewall.enable = false; # [ pois =true  Nao funciona!]
+  networking.nat.enable = false;
+  networking.nftables.ruleset = ''
+    table inet filter {
+      chain input {
+        type filter hook input priority filter; policy accept;
+      }
+      chain forward {
+        type filter hook forward priority filter; policy accept;
+      }
+    }
+    table ip nat {
+      chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        ip saddr 192.168.100.0/24 oifname "ens5" masquerade;
+      }
+    }
+  '';
+
+  users.users.root.openssh.authorizedKeys.keys = [
+    ${ssh_public_keys_nix}
+  ];
+
+  services.openssh = {
+    enable = true;
+    ports = [ ${ssh_port} ];
+    settings.PermitRootLogin = "prohibit-password";
+    settings.PasswordAuthentication = false;
+  };
+
+  programs.zsh.enable = true;
+  programs.bash.enable = true;
+  programs.tmux.enable = true;
+  programs.neovim.enable = true;
+  environment.systemPackages = with pkgs; [
+    git vim newt
+    coreutils
+    findutils
+    gnugrep
+    gnused
+    htop
+    iproute2
+    jq
+    nfs-utils
+  ];
+
+  security.sudo.wheelNeedsPassword = false;
+  virtualisation.incus = {
+    enable = true;
+    ui.enable = true;
+    agent.enable = true;
+
+    preseed = {
+      storage_pools = [
+        {
+          name = "default";
+          driver = "dir";
+        }
+      ];
+
+      networks = [ ];
+
+      profiles = [
+        {
+          name = "default";
+          devices = {
+            root = {
+              path = "/";
+              pool = "default";
+              type = "disk";
+            };
+          };
+        }
+
+        {
+          name = "microk8s";
+          config = {
+            "boot.autostart" = "true";
+            "security.nesting" = "true";
+            "security.privileged" = "true";
+            "linux.kernel_modules" = "ip_vs,ip_vs_rr,ip_vs_wrr,ip_vs_sh,nf_nat,overlay,br_netfilter,rbd";
+
+            "raw.lxc" = ''
+              lxc.apparmor.profile = unconfined
+              lxc.apparmor.allow_nesting = 1
+              lxc.cap.drop=
+              lxc.mount.auto=proc:rw sys:rw
+            '';
+
+            "user.user-data" = cloudInitConfig;
+            "user.network-config" = networkConfig;
+          };
+          devices = {
+            kmsg = {
+              path = "/dev/kmsg";
+              source = "/dev/kmsg";
+              type = "unix-char";
+            };
+            eth0 = {
+              name = "eth0";
+              nictype = "bridged";
+              parent = "br0";
+              type = "nic";
+              "security.ipv4_filtering" = false;
+              "security.mac_filtering" = false;
+            };
+          };
+        }
+      ];
+    };
+  };
+
+  systemd.services."init-incus-${container_name}" = {
+    description = "Garante a existencia e execucao dos containers MicroK8s com nomes únicos baseados no ID da instância";
+
+    after = [
+      "incus.service"
+      "incus-preseed.service"
+      "network-online.target"
+    ];
+    wants = [
+      "incus.service"
+      "incus-preseed.service"
+      "network-online.target"
+    ];
+    wantedBy = [ "multi-user.target" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = false;
+      Restart = "on-failure";
+      RestartSec = "5s";
+      TimeoutStartSec = "900s";
+    };
+#          3) NAME="amnix-"$INSTANCE_UUID"-3" ;;
+
+    script = ''
+      # Gera UUID único para esta instância
+      PREFIX_FILE=/var/lib/incus/microk8s-container-prefix
+      mkdir -p /var/lib/incus
+
+      if [ -s "$PREFIX_FILE" ]; then
+        INSTANCE_UUID=$(cat "$PREFIX_FILE")
+      else
+        EXISTING_PREFIX=$($${pkgs.incus}/bin/incus list --format csv -c n | $${pkgs.gnused}/bin/sed -n 's/^amnix-\([[:alnum:]-]\+\)-[12]$/\1/p' | $${pkgs.coreutils}/bin/sort | $${pkgs.coreutils}/bin/uniq -c | $${pkgs.coreutils}/bin/sort -k1,1nr -k2,2 | $${pkgs.gawk}/bin/awk 'NR == 1 { print $2 }')
+
+        if [ -n "$EXISTING_PREFIX" ]; then
+          INSTANCE_UUID="$EXISTING_PREFIX"
+        else
+          IMDS_TOKEN=$($${pkgs.curl}/bin/curl -fsS --connect-timeout 2 -X PUT -H 'X-aws-ec2-metadata-token-ttl-seconds: 60' http://169.254.169.254/latest/api/token || true)
+          INSTANCE_ID=$($${pkgs.curl}/bin/curl -fsS --connect-timeout 2 -H "X-aws-ec2-metadata-token: $IMDS_TOKEN" http://169.254.169.254/latest/meta-data/instance-id || true)
+
+          if [ -z "$INSTANCE_ID" ]; then
+            INSTANCE_ID=$(cat /sys/devices/virtual/dmi/id/product_uuid 2>/dev/null || true)
+          fi
+
+          INSTANCE_UUID=$(printf '%s' "$INSTANCE_ID" | $${pkgs.coreutils}/bin/tr -cd '[:alnum:]-')
+          if [ -z "$INSTANCE_UUID" ]; then
+            echo "Nao foi possivel obter um identificador unico para esta instancia." >&2
+            exit 1
+          fi
+        fi
+
+        printf '%s\n' "$INSTANCE_UUID" > "$PREFIX_FILE"
+      fi
+
+      for i in 1 2; do
+        case $i in
+          1) NAME="amnix-"$INSTANCE_UUID"-1" ;;
+          2) NAME="amnix-"$INSTANCE_UUID"-2" ;;
+        esac
+      
+      if ! $${pkgs.incus}/bin/incus info $NAME >/dev/null 2>&1; then
+          echo "Container $NAME nao encontrado. Criando de forma declarativa..."
+          $${pkgs.incus}/bin/incus init images:ubuntu/26.04/cloud $NAME -p default -p microk8s
+          $${pkgs.incus}/bin/incus config set $NAME user.network-config - <<NETEOF
+version: 2
+ethernets:
+  eth0:
+    dhcp4: true
+    nameservers:
+      addresses:
+        - 172.31.0.2
+        - 1.1.1.1
+NETEOF
+          $${pkgs.incus}/bin/incus start $NAME
+        else
+          echo "Container $NAME ja existe. Garantindo que ele esteja rodando..."
+          $${pkgs.incus}/bin/incus start $NAME || true
+        fi
+
+        sleep 5
+      done
+    '';
+  };
+
+  system.stateVersion = "26.05";
+}

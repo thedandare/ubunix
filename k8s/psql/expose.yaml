@@ -1,0 +1,33 @@
+---
+# Exposes the CloudNativePG primary outside the cluster without Traefik/Helm.
+#
+# CloudNativePG already creates postgres-server-rw / -ro / -r as ClusterIP
+# services. Those are managed by the operator, so instead of mutating them we
+# add our own Service with the same selector as the -rw one (primary instance).
+#
+# - nodePort 30432 works on every node IP.
+# - externalIPs makes kube-proxy also accept traffic on the standard port 5432
+#   on those addresses (same trick the Traefik service in ns/ingress uses).
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-server-ext
+  namespace: default
+  labels:
+    cnpg.io/cluster: postgres-server
+spec:
+  type: NodePort
+  externalTrafficPolicy: Cluster
+  selector:
+    cnpg.io/cluster: postgres-server
+    cnpg.io/instanceRole: primary
+  ports:
+    - name: postgres
+      protocol: TCP
+      port: 5432
+      targetPort: 5432
+      nodePort: 30432
+  externalIPs:
+    - 34.1.25.177
+    - 34.1.28.21
+    - 34.1.17.21

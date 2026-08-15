@@ -1,0 +1,55 @@
+access_entitlements:
+  - can_access_console
+  - can_delete
+  - can_edit
+  - can_exec
+  - can_manage_backups
+  - can_manage_snapshots
+  - can_update_state
+name: nk8s
+description: ''
+status: Running
+status_code: 103
+created_at: '2026-06-05T23:20:44.195232098Z'
+last_used_at: '2026-06-06T03:04:03.57951385Z'
+location: kub
+type: container
+project: default
+architecture: x86_64
+ephemeral: false
+stateful: false
+profiles:
+  - microk8s
+config:
+  image.architecture: amd64
+  image.description: ubuntu 26.04 LTS amd64 (minimal release) (20260522)
+  image.label: minimal release
+  image.os: ubuntu
+  image.release: resolute
+  image.serial: '20260522'
+  image.type: squashfs
+  image.version: '26.04'
+  linux.kernel_modules: ip_tables,ip6_tables,nf_nat,overlay,br_netfilter
+  security.nesting: 'true'
+  security.privileged: 'true'
+  volatile.base_image: 3e9098d30ecec5d759947d1c80cad988509ba8d1078031784135cda4b2824b5b
+  volatile.cloud-init.instance-id: a2b0499e-a676-4b23-b176-9c871118d9eb
+  volatile.eth0.host_name: veth9f4bbf4a
+  volatile.eth0.hwaddr: 00:16:3e:f3:65:4a
+  volatile.eth0.name: eth0
+  volatile.idmap.base: '0'
+  volatile.idmap.current: '[]'
+  volatile.idmap.next: '[]'
+  volatile.last_state.idmap: '[]'
+  volatile.last_state.power: RUNNING
+  volatile.uuid: 1ef87465-f552-4512-919a-7ba9edbdd7c0
+  volatile.uuid.generation: 1ef87465-f552-4512-919a-7ba9edbdd7c0
+devices:
+  disk-device-1:
+    path: /host
+    source: /home/leo/Desktop/
+    type: disk
+  kmsg:
+    path: /dev/kmsg
+    source: /dev/kmsg
+    type: unix-char

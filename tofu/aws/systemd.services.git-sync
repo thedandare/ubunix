@@ -1,0 +1,43 @@
+  systemd.services.git-sync = {
+    description = "Sincronizador de Repositórios Git";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+    }; 
+
+    script = ''
+      mkdir -p /osnix
+      cd /osnix
+      echo nixos
+            if [ ! -d "nixos.git" ]; then
+                echo "📂 Pasta .git não encontrada ou inválida."
+                 if [ ! -d "nixos" ]; then
+                     echo "📂 Pasta nixos ainda nao existe"
+                      mkdir -p nixos
+                  else
+                      echo "📂 Pasta nixos foi encontrada mas é inválida (sem dir .git)"
+                      PASTA_VELHA="$(echo nixos).old"
+                      if [ ! -d $PASTA_VELHA  ]; then
+                          mv nixos   $PASTA_VELHA
+                          echo "Conteúdo anterior movido para  $PASTA_VELHA "
+                      else
+                          EPOCH=$EPOCHSECONDS
+                          mv nixos $PASTA_VELHA.$EPOCH
+                          echo "Conteúdo anterior movido para $PASTA_VELHA . $EPOCH "
+                      fi
+                 fi
+               URL_GIT="https://github.com/thedandare/nixos.git"
+               echo "  Clonando o repositório $URL_GIT"
+                 git clone "$URL_GIT"
+            else
+                echo "🔄 Pasta já existe. Atualizando com 'git pull'..."
+                cd "nixos" || exit 1
+                 git pull
+            fi
+    '';
+
+    wantedBy = [ "multi-user.target" ];
+  };

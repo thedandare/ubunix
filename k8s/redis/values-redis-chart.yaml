@@ -1,0 +1,326 @@
+# ============================================================================
+# redis — enterprise Helm chart
+# Default values. Every value is documented; override only what you need.
+# ============================================================================
+
+# -- Deployment topology. One of: standalone | sentinel | cluster
+#   standalone : single node (optionally persistent). Dev/test or non-HA.
+#   sentinel   : 1 master + N replicas, each pod runs a Sentinel for
+#                automatic failover. Recommended HA mode.
+#   cluster    : Redis Cluster — data sharded across masters, each with
+#                replicas. For datasets larger than a single node.
+architecture: sentinel
+
+# -- Override the chart name / full name.
+# Chart is named "redis-chart" (OCI repo); keep resource names as "redis".
+nameOverride: "redis"
+fullnameOverride: ""
+
+# -- Kubernetes cluster DNS domain (used to build pod FQDNs).
+clusterDomain: cluster.local
+
+# ----------------------------------------------------------------------------
+# Image
+# ----------------------------------------------------------------------------
+image:
+  registry: docker.io
+  repository: truebyteinnovationllp/redis
+  tag: "7.4.2-alpine3.21"
+  digest: ""            # if set, takes precedence over tag (immutable pulls)
+  pullPolicy: IfNotPresent
+
+# -- Image pull secrets for private registries.
+imagePullSecrets: []
+# - name: my-registry-cred
+
+# ----------------------------------------------------------------------------
+# Authentication
+# ----------------------------------------------------------------------------
+auth:
+  # -- Enable requirepass / masterauth. Strongly recommended in production.
+  enabled: true
+  # -- Password. If empty and auth.enabled, a random one is generated on first
+  #    install and stored in the chart's Secret.
+  password: "HdJva3AdROXfUino0z0JaYEsaGbAFvwR"
+  # -- Use an existing Secret instead of managing one here.
+  existingSecret: ""
+  # -- Key in existingSecret holding the password.
+  existingSecretPasswordKey: redis-password
+  # -- Mount the password as a file and reference it (avoids it on the CLI).
+  usePasswordFiles: true
+
+# ----------------------------------------------------------------------------
+# TLS — in-transit encryption for client and replication traffic.
+# ----------------------------------------------------------------------------
+tls:
+  enabled: false
+  # -- Require TLS only (disable the plaintext port). If false, both ports open.
+  authClients: true
+  # -- Existing secret containing tls.crt, tls.key and ca.crt.
+  existingSecret: ""
+  certFilename: tls.crt
+  certKeyFilename: tls.key
+  certCAFilename: ca.crt
+
+# ----------------------------------------------------------------------------
+# Redis configuration
+# ----------------------------------------------------------------------------
+redis:
+  # -- TCP port for client connections (plaintext). With TLS, see tls.port.
+  port: 18494
+  # -- Extra redis.conf directives appended verbatim to the generated config.
+  configuration: ""
+  #   maxmemory 256mb
+  #   maxmemory-policy allkeys-lru
+  # -- Common, frequently-tuned directives surfaced as values.
+  maxmemory: ""                 # e.g. "512mb"
+  maxmemoryPolicy: "noeviction" # noeviction | allkeys-lru | volatile-ttl | ...
+  appendonly: "yes"             # AOF persistence
+  save: "900 1 300 10 60 10000" # RDB snapshot points ("" to disable RDB)
+  # -- Extra args passed to redis-server.
+  extraFlags: []
+  # -- Disable potentially dangerous commands (renamed to "").
+  disableCommands:
+    - FLUSHDB
+    - FLUSHALL
+
+# ----------------------------------------------------------------------------
+# Per-role sizing & scheduling
+# ----------------------------------------------------------------------------
+
+# Shared pod settings applied to every Redis pod.
+common:
+  # -- Resource requests/limits for the redis container.
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: "1"
+      memory: 512Mi
+  # -- Node selector / tolerations / affinity (affinity auto-generated if empty).
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  # -- Pod anti-affinity preset when affinity is empty: "" | soft | hard
+  podAntiAffinityPreset: soft
+  # -- Topology spread constraints.
+  topologySpreadConstraints: []
+  # -- Priority class for the pods.
+  priorityClassName: ""
+  # -- Extra labels / annotations for pods.
+  podLabels: {}
+  podAnnotations: {}
+  # -- Liveness / readiness / startup probe tuning.
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 20
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 5
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 3
+    failureThreshold: 5
+  startupProbe:
+    enabled: true
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 30
+  # -- Termination grace period (seconds).
+  terminationGracePeriodSeconds: 30
+  # -- Extra environment variables and volumes/mounts.
+  extraEnvVars: []
+  extraVolumes: []
+  extraVolumeMounts: []
+
+# Standalone-specific (architecture: standalone)
+standalone:
+  # standalone is always a single node.
+  replicaCount: 1
+
+# Sentinel-specific (architecture: sentinel)
+sentinel:
+  # -- Persist Sentinel state (run-id + learned topology) on the data PVC and
+  #    resume from it on restart. Prevents spurious failovers / master migration
+  #    during rolling restarts. Requires persistence.enabled; falls back to
+  #    ephemeral state otherwise. Note: the Sentinel config (incl. auth-pass) is
+  #    then stored on the PVC.
+  persistState: true
+  # -- Number of Redis nodes (1 master + N-1 replicas). Use an odd number >= 3.
+  replicaCount: 3
+  # -- Sentinel quorum (votes needed to agree the master is down).
+  quorum: 2
+  # -- Sentinel port.
+  port: 26379
+  # -- Master group name.
+  masterGroup: mymaster
+  # -- Failover tuning (ms).
+  downAfterMilliseconds: 30000
+  failoverTimeout: 180000
+  parallelSyncs: 1
+  # -- Resources for the sentinel sidecar container.
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# Cluster-specific (architecture: cluster)
+cluster:
+  # -- Number of master shards.
+  masters: 3
+  # -- Replicas per master. Total pods = masters * (1 + replicasPerMaster).
+  replicasPerMaster: 1
+  # -- Bus port for inter-node cluster communication.
+  busPort: 16379
+  # -- Run the post-install init Job that forms the cluster.
+  init:
+    enabled: true
+    # -- Resources for the one-shot init job.
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+# ----------------------------------------------------------------------------
+# Persistence
+# ----------------------------------------------------------------------------
+persistence:
+  enabled: true
+  storageClass: ""          # "" uses the cluster default StorageClass
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
+  annotations: {}
+  # -- Retain PVCs when the StatefulSet is deleted/scaled (when supported).
+  retentionPolicy:
+    enabled: false
+    whenDeleted: Retain
+    whenScaled: Retain
+
+# ----------------------------------------------------------------------------
+# Security
+# ----------------------------------------------------------------------------
+# Defaults match the hardened truebyteinnovation/redis image (uid 100 / gid 101).
+podSecurityContext:
+  enabled: true
+  fsGroup: 101
+  fsGroupChangePolicy: OnRootMismatch
+
+containerSecurityContext:
+  enabled: true
+  runAsUser: 100
+  runAsGroup: 101
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+  seccompProfile:
+    type: RuntimeDefault
+
+serviceAccount:
+  create: true
+  name: ""
+  annotations: {}
+  automountServiceAccountToken: false
+
+# -- NetworkPolicy restricting who can reach Redis.
+networkPolicy:
+  enabled: false
+  # -- Allow connections from all namespaces/pods (false = only matched below).
+  allowExternal: true
+  # -- Extra ingress selectors permitted to connect.
+  ingressNSMatchLabels: {}
+  ingressNSPodMatchLabels: {}
+
+# -- PodDisruptionBudget for HA modes.
+podDisruptionBudget:
+  enabled: true
+  minAvailable: ""      # e.g. 2
+  maxUnavailable: 1
+
+# ----------------------------------------------------------------------------
+# Services
+# ----------------------------------------------------------------------------
+service:
+  type: ClusterIP
+  ports:
+    redis: 18494
+    sentinel: 26379
+  nodePorts:
+    redis: ""
+    sentinel: ""
+  annotations: {}
+  # -- externalTrafficPolicy when type is LoadBalancer/NodePort.
+  externalTrafficPolicy: ""
+  clusterIP: ""
+  loadBalancerIP: ""
+
+# ----------------------------------------------------------------------------
+# Metrics — Prometheus
+# ----------------------------------------------------------------------------
+metrics:
+  enabled: false
+  image:
+    # Our own scratch-based exporter (built from upstream redis_exporter source),
+    # 0 CVEs. Override to oliver006/redis_exporter if you prefer upstream.
+    registry: docker.io
+    repository: truebyteinnovationllp/redis-exporter
+    tag: "v1.86.0"
+    pullPolicy: IfNotPresent
+  port: 9121
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 150m
+      memory: 128Mi
+  # -- Extra args/env for the exporter.
+  extraArgs: {}
+  extraEnvVars: []
+  # -- prometheus-operator ServiceMonitor.
+  serviceMonitor:
+    enabled: false
+    namespace: ""
+    interval: 30s
+    scrapeTimeout: 10s
+    labels: {}
+    relabelings: []
+    metricRelabelings: []
+    honorLabels: false
+  # -- prometheus-operator PrometheusRule (alerting).
+  prometheusRule:
+    enabled: false
+    namespace: ""
+    labels: {}
+    # -- Use the curated default alert rules bundled with the chart.
+    defaultRules: true
+    # -- Additional/override rules.
+    additionalRules: []
+
+# ----------------------------------------------------------------------------
+# Init container that fixes data-dir permissions when needed (e.g. on storage
+# that doesn't honor fsGroup). Disabled by default since fsGroup handles it.
+# ----------------------------------------------------------------------------
+volumePermissions:
+  enabled: false
+  image:
+    registry: docker.io
+    repository: alpine
+    tag: "3.21"
+    pullPolicy: IfNotPresent
+
+# -- Update strategy for the StatefulSets.
+updateStrategy:
+  type: RollingUpdate
+
+# -- Extra arbitrary manifests to deploy with the chart (list of objects).
+extraDeploy: []

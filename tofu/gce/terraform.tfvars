@@ -1,0 +1,11 @@
+project_id         = "project-1ab07399-29ab-4352-8f8"
+region             = "southamerica-west1"
+zone               = "southamerica-west1-c"
+instance_name      = "gce-spot-0"
+machine_type       = "t2d-standard-1"
+nixos_image_project = "ubuntu-os-cloud"
+nixos_image_family  = "ubuntu-2604-lts-amd64"
+ssh_port           = 2409
+node_count         = 3
+boot_disk_size_gb = 25
+first_boot_script = ""

@@ -1,0 +1,65 @@
+# ─── Secrets & keys ───────────────────────────────────────────────────────────
+secret/
+*.pem
+*.key
+*_id_ed25519
+*_id_rsa
+*.pfx
+*.p12
+*.crt
+.env
+.env.*
+!.env.example
+kubeconfig
+*.kubeconfig
+
+# ─── Terraform / OpenTofu ─────────────────────────────────────────────────────
+.terraform/
+**/.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+crash.*.log
+terraform.tfstate.d/
+
+# ─── Nix ──────────────────────────────────────────────────────────────────────
+result
+result-*
+.direnv/
+
+# ─── Build artifacts, images & dumps ──────────────────────────────────────────
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+*.dump
+*.iso
+*.qcow2
+*.img
+bin/
+dist/
+
+# ─── Logs & runtime junk ──────────────────────────────────────────────────────
+*.log
+logs/
+core.*
+*~
+*.swp
+*.bak
+*.orig
+*.tmp
+tmp/
+
+# ─── Editor / OS ──────────────────────────────────────────────────────────────
+.directory
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# ─── Misc ─────────────────────────────────────────────────────────────────────
+.old/
+*.pdf

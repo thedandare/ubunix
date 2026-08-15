@@ -1,0 +1,35 @@
+# qui-nfs.yaml
+#
+# PersistentVolume estático para o Qui.
+# O Helm criará o PVC "qui-config" e o prenderá a este PV
+# usando config.persistence.volumeName=qui-config-nfs.
+#
+# Pré-requisito no servidor NFS:
+#   mkdir -p /nfs/st40-ext4/qui
+#
+# O diretório remoto será montado pelo chart em /config.
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: qui-config-nfs
+spec:
+  capacity:
+    # Em NFS estático este valor participa do binding;
+    # não limita o tamanho real do filesystem remoto.
+    storage: 1Gi
+
+  accessModes:
+    - ReadWriteOnce
+
+  persistentVolumeReclaimPolicy: Retain
+
+  # PV estático, sem provisionador dinâmico.
+  storageClassName: ""
+
+  mountOptions:
+    - hard
+
+  nfs:
+    server: 192.168.0.10
+    path: /st40-ext4/qui

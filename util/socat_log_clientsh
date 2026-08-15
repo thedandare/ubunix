@@ -1,0 +1,2 @@
+#!/bin/sh
+socat - SYSTEM:'tee -a client_sent.log' | socat - TCP4:100.100.1.2:100

@@ -1,0 +1,152 @@
+#!/bin/sh
+#!/bin/sh
+
+# 1. Cria a receita cloud-init pura
+cat << 'EOF' > nix-config.yaml
+#cloud-config
+apk_update: true
+
+packages:
+  - curl
+  - bash
+  - zsh
+  - xz
+  - shadow
+  - coreutils
+  - git
+
+runcmd:
+  # 1. Instala as ferramentas necessárias
+  - apk update && apk add curl bash zsh xz shadow coreutils git
+  
+  # 2. ALTERAÇÃO CRÍTICA: Copia o binário REAL do cp (GNU) direto para /bin/cp (Evita que o Nix perda o PATH)
+  # - rm -f /bin/cp
+  # - cp /usr/bin/cp /bin/cp
+  # - ln -sf /usr/bin/bash /bin/bash
+  - addgroup -S nogroup || true
+  - mkdir -p /nix && chown root:users /nix && chmod 0755 /nix
+
+  - export HOME=/root
+
+  - mkdir -p /nix && chown root:users /nix && chmod 0755 /nix
+  
+  # 3. Executa o instalador usando o SH nativo estável (Evita o erro do bash not found)
+  - |
+    cat << 'SCRIPT_EOF' > instalar_nix.sh
+    #!/bin/sh
+    curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh -s -- --daemon
+    #apk add cni-plugins
+    #apk add flannel
+    #apk add flannel-contrib-cni
+    #apk add kubelet
+    #apk add kubeadm
+    #apk add kubectl
+    #apk add uuidgen
+    #apk add nfs-utils
+    SCRIPT_EOF
+  - chmod +x instalar_nix.sh
+  - instalar_nix.sh >> nix-install.log 2>&1
+  
+  # 4. Carrega o ambiente do Nix
+  - if [ -f /root/.nix-profile/etc/profile.d/nix.sh ]; then . /root/.nix-profile/etc/profile.d/nix.sh; elif [ -f /etc/profile.d/nix.sh ]; then . /etc/profile.d/nix.sh; fi
+  
+  # 5. Ativa o suporte a Flakes
+  - mkdir -p /root/.config/nix
+  - echo "experimental-features = nix-command flakes" >> /root/.config/nix/nix.conf
+  
+  # 6. Configuração do Home Manager
+  - mkdir -p /root/.config/home-manager
+  - |
+    cat << 'INNER_EOF' > /root/.config/home-manager/flake.nix
+    {
+      description = "Home Manager Automatizado";
+      inputs = {
+        nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+        home-manager = {
+          url = "github:nix-community/home-manager";
+          inputs.nixpkgs.follows = "nixpkgs";
+        };
+      };
+      outputs = { nixpkgs, home-manager, ... }: {
+        homeConfigurations."root" = home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          modules = [ ./home.nix ];
+        };
+      };
+    }
+    INNER_EOF
+  - |
+    cat << 'INNER_EOF' > /root/.config/home-manager/home.nix
+    { pkgs, ... }: {
+      home.username = "root";
+      home.homeDirectory = "/root";
+      home.stateVersion = "24.11";
+      home.packages = [
+        pkgs.htop
+        pkgs.turbovnc
+      ];
+      programs.home-manager.enable = true;
+    }
+    INNER_EOF
+    
+  # 7. Ativa o ambiente declarativo
+  - nix run github:nix-community/home-manager -- switch --flake /root/.config/home-manager/#root >> nix-install.log 2>&1
+  
+  # 8. Persistência de Shell para seus futuros acessos
+  - echo 'if [ -f /root/.nix-profile/etc/profile.d/nix.sh ]; then . /root/.nix-profile/etc/profile.d/nix.sh; elif [ -f /etc/profile.d/nix.sh ]; then . /etc/profile.d/nix.sh; fi' >> /etc/profile
+  - echo 'export PATH=$HOME/.nix-profile/bin:$PATH' >> /root/.bashrc
+  - echo 'export PATH=$HOME/.nix-profile/bin:$PATH' >> /root/.zshrc
+  - echo 'export HOME=$HOME' >> /root/.zshrc
+  - echo 'export HOME=$HOME' >> /root/.bashrc
+  - |
+   cat << 'SCRIPT2_EOF' > /tmp/instalar_deps.sh
+    #!/bin/sh
+    #add kernel module for networking stuff
+    SCRIPT2_EOF
+  - chmod +x /tmp/instalar_deps.sh
+  - /tmp/instalar_deps.sh >> nix-install-deps.log 2>&1
+
+EOF
+
+# 2. Cria o monitor do log real do instalador do Nix
+cat << 'EOF' > monitorar-nix.sh
+#!/bin/sh
+CONTAINER="teste-nix"
+LOG_FILE="nix-install.log"
+
+echo -e "\e[1;34m[==>] Iniciando monitoramento do Nix no container: $CONTAINER\e[0m"
+
+echo -n "Aguardando o container iniciar..."
+until lxc info "$CONTAINER" 2>/dev/null | grep -q "Status: RUNNING"; do
+    sleep 1
+    echo -n "."
+done
+echo -e " \e[1;32m[OK]\e[0m"
+
+echo -n "Aguardando o instalador do Nix iniciar..."
+until lxc exec "$CONTAINER" -- test -f "$LOG_FILE" 2>/dev/null; do
+    sleep 1
+    echo -n "."
+done
+echo -e " \e[1;32m[Criado]\e[0m"
+
+echo -e "\e[1;33m[==>] Lendo o progresso do Nix (Pressione CTRL+C para sair):\e[0m"
+echo "----------------------------------------------------------------------"
+lxc exec "$CONTAINER" -- tail -f "$LOG_FILE"
+EOF
+
+chmod +x monitorar-nix.sh
+
+# 3. Executa a limpeza e lançamento no LXD
+echo "[==>] Limpando instâncias antigas..."
+lxc delete teste-nix --force 2>/dev/null
+
+echo "[==>] Lançando novo container Alpine correto..."
+lxc launch images:alpine/3.23/cloud teste-nix \
+ 	-c security.nesting=true \
+  	-c security.privileged=true \
+	--config=cloud-init.user-data="$(cat nix-config.yaml)"
+
+# 4. Inicia o monitoramento
+./monitorar-nix.sh
+
