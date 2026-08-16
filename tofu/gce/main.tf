@@ -120,11 +120,11 @@ resource "google_compute_network" "nixos" {
 
 resource "google_compute_subnetwork" "nixos" {
   name          = "${var.name}-subnet"
-  region        = var.region
+  region        = "southamerica-west1"  
   network       = google_compute_network.nixos.id
   ip_cidr_range = var.subnet_cidr
 
-  private_ip_google_access = false
+  private_ip_google_access = true
 }
 
 resource "google_compute_firewall" "allow_ssh" {

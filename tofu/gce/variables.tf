@@ -18,8 +18,9 @@ variable "zone" {
 variable "name" {
   description = "Nome base da VM e dos recursos de rede."
   type        = string
-  default     = "gcnix"
+  default     = "santiago"
 }
+
 
 variable "node_count" {
   description = "Quantidade de instancias NixOS a criar. count=3 cria santnix0, santnix1, santnix2."
@@ -89,13 +90,13 @@ variable "spot_termination_action" {
 variable "assign_public_ip" {
   description = "Se true, cria IP publico na interface."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "reserve_static_ip" {
   description = "Se true, reserva IP regional estatico. Para Spot com STOP costuma ser conveniente."
   type        = bool
-  default     = true
+  default     = false
 }
 
 

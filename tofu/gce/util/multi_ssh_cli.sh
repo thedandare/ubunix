@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SESSION="gcnix"
-ZONE_BASE="us-east5"
+SESSION="santiago"
+ZONE_BASE="southamerica-west1"
 SSH_PORT=22
 
 tmux kill-session -t "$SESSION" 2>/dev/null || true

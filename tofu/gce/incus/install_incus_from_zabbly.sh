@@ -23,7 +23,7 @@ if ! command -v whiptail >/dev/null 2>&1; then
 fi
 
 if ! command -v incus >/dev/null 2>&1; then
-    timeout 3 whiptail --title "Detectando Incus" --msgbox "Incus não está instalado\n\nInstalando via apt" 7 70 >&2
+    timeout 3 whiptail --title "Detectando Incus" --msgbox "Incus não está instaladoInstalando via apt" 7 70 >&2
     clear
     sudo apt-get install -y incus bash-completion | whiptail --progressbox "Executando apt-get" 20 70
 else
@@ -155,7 +155,7 @@ profiles:
       runcmd:
         - echo "=== Iniciando setup ===" >> /var/log/cloud-init-debug.log
         - apt-get update >> /var/log/cloud-init-debug.log 2>&1
-        - apt-get install -y jq curl libnetfilter-conntrack3 libnfnetlink0 iptables zfsutils-linux >> /var/log/cloud-init-debug.log 2>&1
+        - apt-get install -y snap jq curl iptables zfsutils-linux >> /var/log/cloud-init-debug.log 2>&1
 
         - echo "=== Aguardando inicializacao nativa do snapd ===" >> /var/log/cloud-init-debug.log
         - snap wait system seed.loaded >> /var/log/cloud-init-debug.log 2>&1
@@ -230,7 +230,7 @@ fi
 
 case "${clr_answr,,}" in
     s|y)
-        for i in {1..3}; do
+        for i in {2..4}; do
              incus delete -f "$(hostname)-$i" 2>/dev/null || true
         done
     ;;
@@ -239,38 +239,27 @@ case "${clr_answr,,}" in
     ;;
 esac
 
-# --- SEÇÃO DE REDE CORRIGIDA COM WHIPTAIL ---
-echo "Configurando rotas cruzadas a partir do host físico .${ULTIMO_OCTETO}..."
-
-{
-    echo "10" ; sleep 0.2
-    if [ "$ULTIMO_OCTETO" -ne 2 ]; then
-        sudo ip route add 10.42.0.20/29 via 10.42.0.2 dev ens4 2>/dev/null || true
-        echo "-> Rota para santiago0 adicionada."
-    fi
-    echo "40" ; sleep 0.2
-    if [ "$ULTIMO_OCTETO" -ne 3 ]; then
-        sudo ip route add 10.42.0.30/29 via 10.42.0.3 dev ens4 2>/dev/null || true
-        echo "-> Rota para santiago1 adicionada."
-    fi
-    echo "70" ; sleep 0.2
-    if [ "$ULTIMO_OCTETO" -ne 4 ]; then
-        sudo ip route add 10.42.0.40/29 via 10.42.0.4 dev ens4 2>/dev/null || true
-        echo "-> Rota para santiago2 adicionada."
-    fi
-    echo "100" ; sleep 0.2
-} | whiptail --title "Roteamento" --progressbox "Configurando tabelas de rotas cruzadas..." 10 70
-
 # --- LOOP DE CRIAÇÃO PARALELA (ROUTED COM IP ESTÁTICO) ---
 echo "Disparando a criacao dos containers roteados..."
-for i in {1..3}; do
-    BASE_IP=$(( ULTIMO_OCTETO * 10 ))
-    IP_FINAL="10.42.0.$((BASE_IP + i))"
-    
+for i in {2..4}; do
+     
+     # Dentro do loop 'for i in {1..3}; do'
+# Santiago0 (.2) inicia em 16 + i -> .17, .18, .19
+# Santiago1 (.3) inicia em 32 + i -> .33, .34, .35
+# Santiago2 (.4) inicia em 48 + i -> .49, .50, .51
+
+    if [ "$ULTIMO_CHAR" -eq 0 ]; then
+        IP_FINAL="10.42.0.$((16 + i))"
+    elif [ "$ULTIMO_CHAR" -eq 1 ]; then
+        IP_FINAL="10.42.0.$((32 + i))"
+    elif [ "$ULTIMO_CHAR" -eq 2 ]; then
+        IP_FINAL="10.42.0.$((48 + i))"
+    fi
+
+
     echo "Lancando $(hostname)-$i com o IP Roteado: $IP_FINAL"
     
-    # Inicia as instâncias atrelando o IP correto usando a flag estável --device
-    incus launch images:ubuntu/24.04/cloud "$(hostname)-$i" \
+    incus launch images:ubuntu/26.04/cloud "$(hostname)-$i" \
       --profile default \
       --profile microk8s \
       --device eth0,ipv4.address="$IP_FINAL" &

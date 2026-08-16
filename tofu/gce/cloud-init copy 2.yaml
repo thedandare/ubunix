@@ -4,15 +4,6 @@ package_upgrade: true
 hostname: amnix-0
 create_hostname_file: true
 preserve_hostname: true
-# users:
-#   - name: root
-    # ssh_authorized_keys: []
-    # password: Senha171
-    # lock_passwd: false
-
-# ssh_pwauth: true
-# chpasswd:
-#   expire: false
 
 write_files:
   - path: /etc/sysctl.d/99-kubernetes.conf
@@ -23,25 +14,6 @@ write_files:
       fs.inotify.max_user_watches = 524288
       net.bridge.bridge-nf-call-iptables = 1
       net.bridge.bridge-nf-call-ip6tables = 1
-
-  - path: /etc/netplan/99-dns.yaml
-    permissions: '0644'
-    content: |
-      network:
-        version: 2
-        ethernets:
-          eth0:
-            dhcp4: true
-            nameservers:
-              addresses:
-                - 1.1.1.1
-                - 8.8.8.8
-
-  # - path: /etc/ssh/sshd_config.d/99-custom-port.conf
-  #   permissions: '0644'
-  #   content: |
-  #     Port 22
-  #     Port 2409
 
   - path: /usr/local/sbin/microk8s-bind-iptables-nft
     permissions: '0755'
@@ -95,14 +67,6 @@ runcmd:
   - systemctl enable snapd.service snapd.socket || true >> /var/log/cloud-init-debug.log 2>&1
   - systemctl start snapd.service snapd.socket || true >> /var/log/cloud-init-debug.log 2>&1
 
-  # - echo "=== Instalando LXD ===" >> /var/log/cloud-init-debug.log
-  # - sleep 5
-  # - snap install lxd >> /var/log/cloud-init-debug.log 2>&1
-  # - sleep 5
-  # - lxd init --auto >> /var/log/cloud-init-debug.log 2>&1
-  # - sleep 5
-  # - echo "=== LXD instalado com sucesso ===" >> /var/log/cloud-init-debug.log
-
   - echo "=== Instalando MicroK8s ===" >> /var/log/cloud-init-debug.log
   - snap install microk8s --channel=1.36/stable --classic >> /var/log/cloud-init-debug.log 2>&1
   - sleep 5
@@ -138,13 +102,7 @@ runcmd:
   - /snap/microk8s/current/sbin/iptables -t nat -S >/dev/null
   - snap restart microk8s
 
-  # - curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-kge4UdNXv311CNTRL-DHhyKVw9DD1Aj7dqNCrpD1KZsdpQh2K32
-
-  # - curl -fsSL https://pkgs.netbird.io/install.sh | sh
-  # - netbird up --setup-key 0F6C131F-EEC5-4AAE-A253-24E55AE27688
-
   - microk8s status --wait-ready
 
-  # - systemctl restart sshd
 
  

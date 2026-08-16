@@ -1,5 +1,8 @@
 #!/bin/bash
-# Add the Zabbly repository for Incus
+
+#IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
+#ULTIMO_CHAR=$(hostname | sed 's/.*\(.\)$/\1/')
+#ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
 
 sudo mkdir -p /etc/apt/keyrings/
 sudo curl -fsSL https://pkgs.zabbly.com/key.asc \
@@ -174,12 +177,6 @@ echo 'source <(incus completion bash)' >> ~/.bashrc
 for  i in {1..3}; do
     incus launch images:ubuntu/26.04/cloud $(hostname)-$i --profile default  --profile microk8s
 done
-
-
-
-#IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
-#ULTIMO_CHAR=$(hostname | sed 's/.*\(.\)$/\1/')
-#ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
 
 
 
