@@ -257,13 +257,6 @@ for i in {2..4}; do
     CONTAINER_NAME="$(hostname)-$i"
     echo "Lancando $CONTAINER_NAME com o IP $IP_FINAL"
 
-    if ! sudo incus init images:ubuntu/26.04/cloud "$CONTAINER_NAME" \
-      --profile default \
-      --profile microk8s; then
-        echo "Falha ao criar $CONTAINER_NAME" >&2
-        continue
-    fi
-
     NETWORK_CONFIG=$(cat <<EOF
 version: 2
 ethernets:
@@ -276,9 +269,14 @@ ethernets:
         on-link: true
 EOF
 )
-    sudo incus config set "$CONTAINER_NAME" cloud-init.network-config "$NETWORK_CONFIG"
-    sudo incus config device override "$CONTAINER_NAME" eth0 ipv4.address="$IP_FINAL"
-    sudo incus start "$CONTAINER_NAME"
+
+    if ! sudo incus launch images:ubuntu/26.04/cloud "$CONTAINER_NAME" \
+      --profile default \
+      --profile microk8s \
+      --device eth0,ipv4.address="$IP_FINAL" \
+      --config cloud-init.network-config="$NETWORK_CONFIG"; then
+        echo "Falha ao lancar $CONTAINER_NAME" >&2
+    fi
 done
 
 echo "Processo concluído com sucesso!"
