@@ -1,5 +1,5 @@
 export PROJECT_ID="project-1ab07399-29ab-4352-8f8"
-export REGION="europe-southwest1"
+export REGION="southamerica-west1"
 export BUCKET_NAME="${PROJECT_ID}-nixos-images"
 export IMAGE_FAMILY="nixos-26-05-k7"
 export IMAGE_NAME="${IMAGE_FAMILY}-$(date +%Y%m%d%H%M)"

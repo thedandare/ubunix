@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SESSION="santiago"
-ZONE_BASE="southamerica-west1"
+SESSION="espanha"
+ZONE_BASE="europe-southwest1"
 SSH_PORT=22
 
 tmux kill-session -t "$SESSION" 2>/dev/null || true
@@ -33,13 +33,13 @@ runpane() {
 }
 
 if [[ $# -gt 0 ]]; then
-  runpane "$P0" "santiago0" "$@"
-  runpane "$P1" "santiago1" "$@"
-  runpane "$P2" "santiago2" "$@"
+  runpane "$P0" "espanha0" "$@"
+  runpane "$P1" "espanha1" "$@"
+  runpane "$P2" "espanha2" "$@"
 else
-  runpane "$P0" "santiago0"
-  runpane "$P1" "santiago1"
-  runpane "$P2" "santiago2"
+  runpane "$P0" "espanha0"
+  runpane "$P1" "espanha1"
+  runpane "$P2" "espanha2"
 fi
 
 tmux attach -t "$SESSION"

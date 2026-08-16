@@ -17,7 +17,7 @@ set -eo pipefail
 
 SSH_PORT=22
 TOKEN_TTL=999999
-ZONE_BASE="europe-southwest1"
+ZONE_BASE="southamerica-west1"
 
 # Instancias fixas do cluster
 NAMES=("santiago0" "santiago1" "santiago2")
