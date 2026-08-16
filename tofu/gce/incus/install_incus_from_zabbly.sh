@@ -27,7 +27,7 @@ if ! command -v incus >/dev/null 2>&1; then
     clear
     sudo apt-get install -y incus bash-completion | whiptail --progressbox "Executando apt-get" 20 70
 else
-    timeout 2 whiptail --title "Incus 👌" --msgbox " Versao: $(incus --version) --  $(uname -a)" 7 70 >&2
+    timeout 2 whiptail --title "Incus 👌" --msgbox " Versao: $(sudo incus --version) --  $(uname -a)" 7 70 >&2
     timeout 1 clear
 fi
 
@@ -62,10 +62,16 @@ case "${answer,,}" in
         sudo incus admin init
     ;;
     p)
-        # Configuração de preseed em modo ROUTED puro para reter a faixa 10.42.0.X
+        # Bridge gerenciada pelo Incus, com DHCP e NAT para a rede externa
         cat <<EOF | sudo incus admin init --preseed
 config: {}
-networks: []  # Deixamos vazio para os IPs pertencerem diretamente à rede física
+networks:
+- name: incusbr0
+  type: bridge
+  config:
+    ipv4.address: 10.100.0.1/24
+    ipv4.nat: "true"
+    ipv6.address: none
 storage_pools:
 - config:
     size: 15GiB
@@ -74,12 +80,12 @@ storage_pools:
   driver: btrfs
 profiles:
 - name: default
-  description: "Perfil padrao com roteamento nativo"
+  description: "Perfil padrao com bridge Incus"
   devices:
     eth0:
       name: eth0
-      nictype: routed
-      parent: ens4     # Nome da sua interface física da Google Cloud
+      nictype: bridged
+      parent: incusbr0
       type: nic
     root:
       path: /
@@ -191,6 +197,14 @@ profiles:
         - microk8s status --wait-ready
   devices: {}
 EOF
+        sudo incus network show incusbr0 >/dev/null 2>&1 || \
+            sudo incus network create incusbr0 \
+                ipv4.address=10.100.0.1/24 \
+                ipv4.nat=true \
+                ipv6.address=none
+        sudo incus profile device remove default eth0 >/dev/null 2>&1 || true
+        sudo incus profile device add default eth0 nic \
+            nictype=bridged parent=incusbr0
     ;;
      n)
         echo "Skipping init"
@@ -200,25 +214,9 @@ esac
 sed -i '/incus completion/d' ~/.bashrc
 sed -i '/bash_completion/d' ~/.bashrc
 echo 'source /usr/share/bash-completion/bash_completion' >> ~/.bashrc
-echo 'source <(incus completion bash)' >> ~/.bashrc
+echo 'source <(sudo incus completion bash)' >> ~/.bashrc
 source /usr/share/bash-completion/bash_completion 2>/dev/null || true
-source <(incus completion bash) 2>/dev/null || true
-
-# Ativa o encaminhamento de pacotes no Kernel do host (Sem isso, as rotas cruzadas morrem)
-sudo sysctl -w net.ipv4.ip_forward=1 >/dev/null
-
-IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
-ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
-
-case "$ULTIMO_OCTETO" in
-    2) BASE_IP=17 ;;
-    3) BASE_IP=33 ;;
-    4) BASE_IP=49 ;;
-    *)
-        echo "IP do host inesperado: $IP_MAQUINA" >&2
-        exit 1
-        ;;
-esac
+source <(sudo incus completion bash) 2>/dev/null || true
 
 clr_answr=$(timeout --foreground 5s \
 whiptail --title "Incus clean" \
@@ -240,7 +238,7 @@ fi
 case "${clr_answr,,}" in
     s|y)
         for i in {1..3}; do
-             incus delete -f "$(hostname)-$i" 2>/dev/null || true
+             sudo incus delete -f "$(hostname)-$i" 2>/dev/null || true
         done
     ;;
      n)
@@ -248,17 +246,14 @@ case "${clr_answr,,}" in
     ;;
 esac
 
-# --- LOOP DE CRIAÇÃO PARALELA (ROUTED COM IP ESTÁTICO) ---
-echo "Disparando a criacao dos containers roteados..."
+# --- LOOP DE CRIAÇÃO PARALELA NA BRIDGE ---
+echo "Disparando a criacao dos containers na bridge..."
 for i in {1..3}; do
-    IP_FINAL="10.42.0.$((BASE_IP + i))"
+    echo "Lancando $(hostname)-$i na bridge incusbr0"
 
-    echo "Lancando $(hostname)-$i com o IP Roteado: $IP_FINAL"
-
-    incus launch images:ubuntu/26.04/cloud "$(hostname)-$i" \
+    sudo incus launch images:ubuntu/26.04/cloud "$(hostname)-$i" \
       --profile default \
-      --profile microk8s \
-      --device eth0,ipv4.address="$IP_FINAL" &
+      --profile microk8s &
 done
 
 echo "Processo concluído com sucesso!"
