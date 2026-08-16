@@ -62,16 +62,10 @@ case "${answer,,}" in
         sudo incus admin init
     ;;
     p)
-        # Bridge gerenciada pelo Incus, com DHCP e NAT para a rede externa
+        # Rede routed: os containers usam aliases IP da NIC GCE do host
         cat <<EOF | sudo incus admin init --preseed
 config: {}
-networks:
-- name: incusbr0
-  type: bridge
-  config:
-    ipv4.address: 10.100.0.1/24
-    ipv4.nat: "true"
-    ipv6.address: none
+networks: []
 storage_pools:
 - config:
     size: 15GiB
@@ -80,12 +74,12 @@ storage_pools:
   driver: btrfs
 profiles:
 - name: default
-  description: "Perfil padrao com bridge Incus"
+  description: "Perfil padrao com routed NIC"
   devices:
     eth0:
       name: eth0
-      nictype: bridged
-      parent: incusbr0
+      nictype: routed
+      parent: ens4
       type: nic
     root:
       path: /
@@ -197,14 +191,9 @@ profiles:
         - microk8s status --wait-ready
   devices: {}
 EOF
-        sudo incus network show incusbr0 >/dev/null 2>&1 || \
-            sudo incus network create incusbr0 \
-                ipv4.address=10.100.0.1/24 \
-                ipv4.nat=true \
-                ipv6.address=none
         sudo incus profile device remove default eth0 >/dev/null 2>&1 || true
         sudo incus profile device add default eth0 nic \
-            nictype=bridged parent=incusbr0
+            nictype=routed parent=ens4
     ;;
      n)
         echo "Skipping init"
@@ -246,14 +235,31 @@ case "${clr_answr,,}" in
     ;;
 esac
 
-# --- LOOP DE CRIAÇÃO PARALELA NA BRIDGE ---
-echo "Disparando a criacao dos containers na bridge..."
+sudo sysctl -w net.ipv4.ip_forward=1 >/dev/null
+
+IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
+ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
+
+case "$ULTIMO_OCTETO" in
+    2) BASE_IP=16 ;;
+    3) BASE_IP=32 ;;
+    4) BASE_IP=48 ;;
+    *)
+        echo "IP privado do host inesperado: $IP_MAQUINA" >&2
+        exit 1
+        ;;
+esac
+
+# --- LOOP DE CRIAÇÃO PARALELA NA REDE GCE ---
+echo "Disparando a criacao dos containers routed..."
 for i in {1..3}; do
-    echo "Lancando $(hostname)-$i na bridge incusbr0"
+    IP_FINAL="10.42.0.$((BASE_IP + i))"
+    echo "Lancando $(hostname)-$i com o IP $IP_FINAL"
 
     sudo incus launch images:ubuntu/26.04/cloud "$(hostname)-$i" \
       --profile default \
-      --profile microk8s &
+      --profile microk8s \
+      --device eth0,ipv4.address="$IP_FINAL" &
 done
 
 echo "Processo concluído com sucesso!"
