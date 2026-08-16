@@ -177,11 +177,11 @@ resource "google_compute_address" "nixos" {
 
 locals {
   alias_ip_cidrs = [
-    "10.42.0.16/28", # santiago0: .17-.30 para Incus
-    "10.42.0.32/28", # santiago1: .33-.46 para Incus
-    "10.42.0.48/28", # santiago2: .49-.62 para Incus
+    ["10.42.0.18/32", "10.42.0.19/32", "10.42.0.20/32"], # santiago0
+    ["10.42.0.34/32", "10.42.0.35/32", "10.42.0.36/32"], # santiago1
+    ["10.42.0.50/32", "10.42.0.51/32", "10.42.0.52/32"], # santiago2
   ]
-  private_ips = ["10.42.0.2", "10.42.0.3", "10.42.0.4"]
+  private_ips = ["10.42.0.17", "10.42.0.33", "10.42.0.49"]
 }
 
 resource "google_compute_address" "nixos_internal" {
@@ -220,8 +220,11 @@ resource "google_compute_instance" "nixos" {
   network_interface {
     subnetwork = google_compute_subnetwork.nixos.id
     network_ip = google_compute_address.nixos_internal[count.index].address
-    alias_ip_range {
-      ip_cidr_range = local.alias_ip_cidrs[count.index]
+    dynamic "alias_ip_range" {
+      for_each = local.alias_ip_cidrs[count.index]
+      content {
+        ip_cidr_range = alias_ip_range.value
+      }
     }
     dynamic "access_config" {
       for_each = var.assign_public_ip ? [1] : []

@@ -6,9 +6,9 @@ IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
 ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
 
 case "$ULTIMO_OCTETO" in
-    2) CONTAINER_IPS=(10.42.0.17 10.42.0.18 10.42.0.19) ;;
-    3) CONTAINER_IPS=(10.42.0.33 10.42.0.34 10.42.0.35) ;;
-    4) CONTAINER_IPS=(10.42.0.49 10.42.0.50 10.42.0.51) ;;
+    17) CONTAINER_IPS=(10.42.0.18 10.42.0.19 10.42.0.20) ;;
+    33) CONTAINER_IPS=(10.42.0.34 10.42.0.35 10.42.0.36) ;;
+    49) CONTAINER_IPS=(10.42.0.50 10.42.0.51 10.42.0.52) ;;
     *)
         echo "[FALHA] IP privado do host inesperado: $IP_MAQUINA"
         exit 1
