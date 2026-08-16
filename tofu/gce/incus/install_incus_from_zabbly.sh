@@ -226,7 +226,7 @@ fi
 
 case "${clr_answr,,}" in
     s|y)
-        for i in {1..3}; do
+        for i in {2..4}; do
              sudo incus delete -f "$(hostname)-$i" 2>/dev/null || true
         done
     ;;
@@ -252,14 +252,30 @@ esac
 
 # --- LOOP DE CRIAÇÃO PARALELA NA REDE GCE ---
 echo "Disparando a criacao dos containers routed..."
-for i in {1..3}; do
-    IP_FINAL="10.42.0.$((BASE_IP + i))"
-    echo "Lancando $(hostname)-$i com o IP $IP_FINAL"
+for i in {2..4}; do
+    IP_FINAL="10.42.0.$((BASE_IP + i - 1))"
+    CONTAINER_NAME="$(hostname)-$i"
+    echo "Lancando $CONTAINER_NAME com o IP $IP_FINAL"
 
-    sudo incus launch images:ubuntu/26.04/cloud "$(hostname)-$i" \
+    sudo incus init images:ubuntu/26.04/cloud "$CONTAINER_NAME" \
       --profile default \
-      --profile microk8s \
-      --device eth0,ipv4.address="$IP_FINAL" &
+      --profile microk8s
+
+    NETWORK_CONFIG=$(cat <<EOF
+version: 2
+ethernets:
+  eth0:
+    addresses:
+      - $IP_FINAL/32
+    routes:
+      - to: default
+        via: 169.254.0.1
+        on-link: true
+EOF
+)
+    sudo incus config set "$CONTAINER_NAME" cloud-init.network-config "$NETWORK_CONFIG"
+    sudo incus config device set "$CONTAINER_NAME" eth0 ipv4.address="$IP_FINAL"
+    sudo incus start "$CONTAINER_NAME"
 done
 
 echo "Processo concluído com sucesso!"
