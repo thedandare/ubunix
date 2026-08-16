@@ -1,0 +1,26 @@
+[2026-08-13 00:43:30] Validando dependencias locais...
+[2026-08-13 00:43:30] Verificando containers Incus...
+[2026-08-13 00:43:30]   leonk7s: RUNNING
+[2026-08-13 00:43:30]   leonk8s: RUNNING
+[2026-08-13 00:43:30]   leonk9s: RUNNING
+[2026-08-13 00:43:30] Obtendo IPs locais dos containers via eth0...
+[2026-08-13 00:43:30]   leonk7s -> 192.168.2.7
+[2026-08-13 00:43:30]   leonk8s -> 192.168.2.8
+[2026-08-13 00:43:31]   leonk9s -> 192.168.2.9
+[2026-08-13 00:43:31] Obtendo hostnames dos containers...
+[2026-08-13 00:43:31]   leonk7s hostname: leonk7s
+[2026-08-13 00:43:31]   leonk8s hostname: leonk8s
+[2026-08-13 00:43:31]   leonk9s hostname: leonk9s
+[2026-08-13 00:43:31] Verificando cluster MicroCeph existente no master...
+[2026-08-13 00:43:32] Membros atuais: []
+[2026-08-13 00:43:32] --- Executando bootstrap do MicroCeph no master ---
+[2026-08-13 00:43:32] >>> [leonk7s] Bootstrap do MicroCeph
+[2026-08-13 00:43:32] Copiando microceph_bootstrap.sh para leonk7s:/tmp/microceph_bootstrap.sh
+Pushing /osnix/ubunix/tofu/aws/util/microceph_bootstrap.sh to /tmp/microceph_bootstrap.sh: 100% (8.32kB/s)                                                                                                           [2026-08-13 00:43:33] Script copiado e permissao 700 aplicada.
+[2026-08-13 00:43:33] Executando bootstrap com primeiro worker: leonk8s
+[2026-08-13 03:43:33] Interface VPN: eth0  IP: 192.168.2.7
+[2026-08-13 03:43:33] Public network: 192.168.0.0/24
+[2026-08-13 03:43:33] ERRO: MicroCeph instalado, mas cluster nao inicializado. Use FRESH_INSTALL=1.
+[2026-08-13 00:43:33] ERRO: Bootstrap nao retornou token em stdout
+[2026-08-13 00:43:33] ERRO: Bootstrap falhou
+[2026-08-13 00:43:33] Limpando arquivos temporarios...

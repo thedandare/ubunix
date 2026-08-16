@@ -1,0 +1,58 @@
+[2026-07-14 12:28:01] Validando dependencias locais...
+[2026-07-14 12:28:01] Verificando containers Incus...
+[2026-07-14 12:28:01]   leonk7s: RUNNING
+[2026-07-14 12:28:01]   leonk8s: RUNNING
+[2026-07-14 12:28:01]   leonk9s: RUNNING
+[2026-07-14 12:28:01] Obtendo IPs locais dos containers via eth0...
+[2026-07-14 12:28:01]   leonk7s -> 192.168.0.7
+[2026-07-14 12:28:01]   leonk8s -> 192.168.0.8
+[2026-07-14 12:28:01]   leonk9s -> 192.168.0.9
+[2026-07-14 12:28:01] Obtendo hostnames dos containers...
+[2026-07-14 12:28:01]   leonk7s hostname: leonk7s
+[2026-07-14 12:28:01]   leonk8s hostname: leonk8s
+[2026-07-14 12:28:01]   leonk9s hostname: leonk9s
+[2026-07-14 12:28:01] Verificando cluster MicroCeph existente no master...
+[2026-07-14 12:28:02] Membros atuais: [{"name":"leonk7s","address":"192.168.0.7:7443","certificate":"-----BEGIN CERTIFICATE-----\nMIIB5zCCAW2gAwIBAgIRAO9tpIxE5+xkCfr22RvCIVcwCgYIKoZIzj0EAwMwJTEM\nMAoGA1UEChMDTFhEMRUwEwYDVQQDDAxyb290QGxlb25rN3MwHhcNMjYwNzE0MTUy\nMjU2WhcNMzYwNzExMTUyMjU2WjAlMQwwCgYDVQQKEwNMWEQxFTATBgNVBAMMDHJv\nb3RAbGVvbms3czB2MBAGByqGSM49AgEGBSuBBAAiA2IABCb740llAUsSzoL4EN7H\ngim30rQFi2/33dOaKYAj3iiDr6gNlL/Xi6xjKPeRjfKsyVsGx+CAwLyPloHBkRpK\nSkNU7CXcUla/O+5dOGCKtaT2q5d6mKC0r6u5E52yZoA4IaNhMF8wDgYDVR0PAQH/\nBAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwKgYDVR0R\nBCMwIYIHbGVvbms3c4cEfwAAAYcQAAAAAAAAAAAAAAAAAAAAATAKBggqhkjOPQQD\nAwNoADBlAjEAk3DruGG0PgJIcboBxofJrr1WbYT3XtUcgOyKRT++CPXtGPTRM8hp\n4+yEC0bN3iZPAjAecb7FwE96wjpDhngjc+ATBjtRtyMZ+/ZVOtvgO+lig6uAZvtB\n+mQ1aBk69po0zNU=\n-----END CERTIFICATE-----\n","role":"voter","schema_internal_version":6,"schema_external_version":7,"last_heartbeat":"2026-07-14T15:27:59.049273634Z","status":"ONLINE","extensions":["internal:runtime_extension_v1","internal:rename_core_endpoints"],"secret":""},{"name":"leonk9s","address":"192.168.0.9:7443","certificate":"-----BEGIN CERTIFICATE-----\nMIIB5TCCAWygAwIBAgIQAwfqccoqky3O3GpEQ73HojAKBggqhkjOPQQDAzAlMQww\nCgYDVQQKEwNMWEQxFTATBgNVBAMMDHJvb3RAbGVvbms5czAeFw0yNjA3MTQxNTI0\nNDdaFw0zNjA3MTExNTI0NDdaMCUxDDAKBgNVBAoTA0xYRDEVMBMGA1UEAwwMcm9v\ndEBsZW9uazlzMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEzYwIoDe0p3exLUf9VjKv\n2kziHbGJInjDiLCsXQa+F4+n8RG7p2goRTNWuHFSa9hS2M6h4eUkKlsSiNVFDlAa\njz6/khHWRzUbrns3SsBt4Bx0DWKtg+0BPlBCRbrmU692o2EwXzAOBgNVHQ8BAf8E\nBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAqBgNVHREE\nIzAhggdsZW9uazlzhwR/AAABhxAAAAAAAAAAAAAAAAAAAAABMAoGCCqGSM49BAMD\nA2cAMGQCMGWfmjNOvzDvX0jBB281qZ6BwOkTKPODOGpUk8p/RMH1Sp7knVsb1UNW\nQdVUv+jZkAIwZeITdZ5bazTkfpXAeoLVlrXN+hXsp6n9TqUcNRE9AMAbvQSKrhtl\nj0/QegqTntcb\n-----END CERTIFICATE-----\n","role":"spare","schema_internal_version":6,"schema_external_version":7,"last_heartbeat":"2026-07-14T15:27:59.079547228Z","status":"ONLINE","extensions":["internal:runtime_extension_v1","internal:rename_core_endpoints"],"secret":""}]
+[2026-07-14 12:28:02] [SKIP] Master leonk7s (leonk7s) ja esta no cluster
+[2026-07-14 12:28:02] --- Executando join dos workers ---
+[2026-07-14 12:28:02] ERRO: Nao foi possivel gerar token para leonk8s
+[2026-07-14 12:28:02] AVISO: Nao foi possivel gerar token para leonk8s
+[2026-07-14 12:28:02] [SKIP] leonk9s (leonk9s) ja esta no cluster
+[2026-07-14 12:28:02] === Verificando saude do cluster ===
+MicroCeph deployment summary:
+- leonk7s (192.168.0.7)
+  Services: mds, mgr, mon, osd
+  Disks: 1
+- leonk9s (192.168.0.9)
+  Services: mds, mgr, mon
+  Disks: 0
++---------+------------------+-------+------------------------------------------------------------------+--------+
+|  NAME   |     ADDRESS      | ROLE  |                           FINGERPRINT                            | STATUS |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk7s | 192.168.0.7:7443 | voter | 318678c1ef9a498d1770ba147612f6893fdbb91bcc4a84d28ea456a8218b9aec | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk9s | 192.168.0.9:7443 | spare | d00df0a9e386f7cd407e7083ed25d9c78b3d9b11fa92c0d8baeefcf7b0128814 | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+Error: internal error: unable to fetch unpartitoned disks: internal error: unable to fetch available disks: failed listing storage devices: Failed to find "/dev/disk/by-path/pci-0000:01:00.0-nvme-1": lstat /dev/nvme0n1: no such file or directory
+  cluster:
+    id:     bac04d83-ce49-4c16-8fd4-791a95e10450
+    health: HEALTH_WARN
+            OSD count 1 < osd_pool_default_size 3
+ 
+  services:
+    mon: 2 daemons, quorum leonk7s,leonk9s (age 2m)
+    mgr: leonk7s(active, since 3m), standbys: leonk9s
+    osd: 1 osds: 1 up (since 27s), 1 in (since 31s)
+ 
+  data:
+    pools:   0 pools, 0 pgs
+    objects: 0 objects, 0 B
+    usage:   426 MiB used, 3.6 GiB / 4 GiB avail
+    pgs:     
+ 
+ID  CLASS  WEIGHT   TYPE NAME         STATUS  REWEIGHT  PRI-AFF
+-1         0.00389  root default                               
+-2         0.00389      host leonk7s                           
+ 1         0.00389          osd.1         up   1.00000  1.00000
+[2026-07-14 12:28:04] AVISO: Workers que falharam: leonk8s
+[2026-07-14 12:28:04] Limpando arquivos temporarios...

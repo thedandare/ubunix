@@ -1,0 +1,148 @@
+[2026-08-13 01:25:27] Validando dependencias locais...
+[2026-08-13 01:25:27] Verificando containers Incus...
+[2026-08-13 01:25:27]   leonk7s: RUNNING
+[2026-08-13 01:25:27]   leonk8s: RUNNING
+[2026-08-13 01:25:27]   leonk9s: RUNNING
+[2026-08-13 01:25:27] Obtendo IPs locais dos containers via eth0...
+[2026-08-13 01:25:27]   leonk7s -> 192.168.2.7
+[2026-08-13 01:25:27]   leonk8s -> 192.168.2.8
+[2026-08-13 01:25:27]   leonk9s -> 192.168.2.9
+[2026-08-13 01:25:27] Obtendo hostnames dos containers...
+[2026-08-13 01:25:28]   leonk7s hostname: leonk7s
+[2026-08-13 01:25:28]   leonk8s hostname: leonk8s
+[2026-08-13 01:25:28]   leonk9s hostname: leonk9s
+[2026-08-13 01:25:28] Verificando cluster MicroCeph existente no master...
+[2026-08-13 01:25:29] Membros atuais: [{"name":"leonk7s","address":"192.168.2.7:7443","certificate":"-----BEGIN CERTIFICATE-----\nMIIB5jCCAWygAwIBAgIQeegSSBff0iEYUOmNPqN1gzAKBggqhkjOPQQDAzAlMQww\nCgYDVQQKEwNMWEQxFTATBgNVBAMMDHJvb3RAbGVvbms3czAeFw0yNjA4MTMwMzQ4\nMThaFw0zNjA4MTAwMzQ4MThaMCUxDDAKBgNVBAoTA0xYRDEVMBMGA1UEAwwMcm9v\ndEBsZW9uazdzMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEmVtyf4sFNBP2C97FY4I0\nEhSqNmkvw6qySNnmcYhEGdqM+W8xzFgiE/fzn0Gyvq2H9Ob8z1hsKRjZwEaTrvk+\nSNR9cexKaODVtoQFAsIYCUGx+00tFsH49E4B91JpnW4to2EwXzAOBgNVHQ8BAf8E\nBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAqBgNVHREE\nIzAhggdsZW9uazdzhwR/AAABhxAAAAAAAAAAAAAAAAAAAAABMAoGCCqGSM49BAMD\nA2gAMGUCMBWsAtOELf99/7xsIhm2wokvm5F/xO/EYHM6q0otP/2xmnzDw1WIy9J0\nyF5wH7PXBAIxAPHYp4eHWsSbeMHMNmTig21mu9uJDu9c60Sg4jM9JaM9EMUG9DDB\nBItBL/iFmOy6Mg==\n-----END CERTIFICATE-----\n","role":"voter","schema_internal_version":6,"schema_external_version":7,"last_heartbeat":"2026-08-13T04:25:24.681576474Z","status":"ONLINE","extensions":["internal:runtime_extension_v1","internal:rename_core_endpoints"],"secret":""},{"name":"leonk8s","address":"192.168.2.8:7443","certificate":"-----BEGIN CERTIFICATE-----\nMIIB5zCCAW2gAwIBAgIRANS12Vjk+roA3gDCvMsA3eIwCgYIKoZIzj0EAwMwJTEM\nMAoGA1UEChMDTFhEMRUwEwYDVQQDDAxyb290QGxlb25rOHMwHhcNMjYwODEzMDM0\nOTI4WhcNMzYwODEwMDM0OTI4WjAlMQwwCgYDVQQKEwNMWEQxFTATBgNVBAMMDHJv\nb3RAbGVvbms4czB2MBAGByqGSM49AgEGBSuBBAAiA2IABAXHR7cqVXMLExaRhErF\nRhwk+KGhU0WuuRG1zRxiofOu8sI2WOlzkFXB9nqqeANgKH4wyC0LrVMog48kBecH\nKL6bM9vVV+6OisYeFX/dfh4/KOGeNQ7ecBN/t2uLpbCEzaNhMF8wDgYDVR0PAQH/\nBAQDAgWgMBMGA1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwKgYDVR0R\nBCMwIYIHbGVvbms4c4cEfwAAAYcQAAAAAAAAAAAAAAAAAAAAATAKBggqhkjOPQQD\nAwNoADBlAjEAt9qz38kVmLWmblI4pEqQIgq0FvzKj1U+129r3RfZWxuVTGeqI7lK\nTV8GCe+QOc9AAjBQouQgMe8Eya21WKSiKlbnmYkhakW+lf/Q4ZtlLKB0qP9kRgAT\nu2RLmMNwhSIM9Tk=\n-----END CERTIFICATE-----\n","role":"voter","schema_internal_version":6,"schema_external_version":7,"last_heartbeat":"2026-08-13T04:25:24.809723941Z","status":"ONLINE","extensions":["internal:runtime_extension_v1","internal:rename_core_endpoints"],"secret":""},{"name":"leonk9s","address":"192.168.2.9:7443","certificate":"-----BEGIN CERTIFICATE-----\nMIIB5zCCAWygAwIBAgIQMZ3SKfHZLzz5NAVpDcicUDAKBggqhkjOPQQDAzAlMQww\nCgYDVQQKEwNMWEQxFTATBgNVBAMMDHJvb3RAbGVvbms5czAeFw0yNjA4MTMwMzUw\nMjRaFw0zNjA4MTAwMzUwMjRaMCUxDDAKBgNVBAoTA0xYRDEVMBMGA1UEAwwMcm9v\ndEBsZW9uazlzMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAEzwLAAnrKEkkYxRpMN2LZ\nzmh57nS6T3h0AXjgdFLJTQ6L44FhxXxrzdWV7/OWFmPdZxOFZbGL7DMEIc4aZpn7\nNAYC+BUJqpb7Y93jJyHba0mIlbiG5DdCzi/BbbdZxSl9o2EwXzAOBgNVHQ8BAf8E\nBAMCBaAwEwYDVR0lBAwwCgYIKwYBBQUHAwEwDAYDVR0TAQH/BAIwADAqBgNVHREE\nIzAhggdsZW9uazlzhwR/AAABhxAAAAAAAAAAAAAAAAAAAAABMAoGCCqGSM49BAMD\nA2kAMGYCMQCxYzdfpNwM76h84y4k/sG+CenJLAp0y6xNoZCVTDD9g6DcEIMYsuEI\nb2PhHLrL0QgCMQCEC+UppMNFy0z+1sFuhP5MfarPf30iHau2fco+JHMaQ4gEzA0+\naNYsNdJjGAFXLRM=\n-----END CERTIFICATE-----\n","role":"voter","schema_internal_version":6,"schema_external_version":7,"last_heartbeat":"2026-08-13T04:25:24.803305049Z","status":"ONLINE","extensions":["internal:runtime_extension_v1","internal:rename_core_endpoints"],"secret":""}]
+[2026-08-13 01:25:29] [SKIP] Master leonk7s (leonk7s) ja esta no cluster
+[2026-08-13 01:25:29] --- Executando join dos workers ---
+[2026-08-13 01:25:29] [SKIP] leonk8s (leonk8s) ja esta no cluster
+[2026-08-13 01:25:29] [SKIP] leonk9s (leonk9s) ja esta no cluster
+[2026-08-13 01:25:29] === Verificando saude do cluster ===
+MicroCeph deployment summary:
+- leonk7s (192.168.2.7)
+  Services: mds, mgr, mon, osd
+  Disks: 1
+- leonk8s (192.168.2.8)
+  Services: mds, mgr, mon, osd
+  Disks: 1
+- leonk9s (192.168.2.9)
+  Services: mds, mgr, mon, osd
+  Disks: 1
++---------+------------------+-------+------------------------------------------------------------------+--------+
+|  NAME   |     ADDRESS      | ROLE  |                           FINGERPRINT                            | STATUS |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk7s | 192.168.2.7:7443 | voter | 77a3beddba4c552c345fd3311209651c64f5061090c0603b5c7edd5d31561d99 | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk8s | 192.168.2.8:7443 | voter | 8fc47e433ef5422392f369682a685f65ba3a363f7333269558ff5120afabac6d | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk9s | 192.168.2.9:7443 | voter | 5b7303307b3d98c93169d0f157dce31f238ab18aedbac0994b2594e7d455fb9d | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+Error: internal error: unable to fetch unpartitoned disks: internal error: unable to fetch available disks: failed listing storage devices: Failed to find "/dev/disk/by-path/acpi-MSFT1000:00-scsi-0:0:0:1": lstat /dev/sda: no such file or directory
+  cluster:
+    id:     7d3e48f0-1364-4563-b926-4e6188bc88bc
+    health: HEALTH_OK
+ 
+  services:
+    mon: 3 daemons, quorum leonk7s,leonk8s,leonk9s (age 33m)
+    mgr: leonk7s(active, since 32m), standbys: leonk8s, leonk9s
+    osd: 3 osds: 3 up (since 33m), 3 in (since 33m)
+ 
+  data:
+    pools:   2 pools, 33 pgs
+    objects: 4 objects, 449 KiB
+    usage:   80 MiB used, 12 GiB / 12 GiB avail
+    pgs:     33 active+clean
+ 
+ID  CLASS  WEIGHT   TYPE NAME         STATUS  REWEIGHT  PRI-AFF
+-1         0.01167  root default                               
+-2         0.00389      host leonk7s                           
+ 1         0.00389          osd.1         up   1.00000  1.00000
+-3         0.00389      host leonk8s                           
+ 2         0.00389          osd.2         up   1.00000  1.00000
+-4         0.00389      host leonk9s                           
+ 3         0.00389          osd.3         up   1.00000  1.00000
+[2026-08-13 01:25:35] === Integrando MicroCeph com MicroK8s ===
+[2026-08-13 01:25:35] >>> [leonk7s] Integrando MicroCeph com MicroK8s
+[2026-08-13 01:25:35] Copiando integrar-microceph-microk8s.sh para leonk7s:/tmp/integrar-microceph-microk8s.sh
+Pushing /osnix/ubunix/tofu/aws/util/integrar-microceph-microk8s.sh to /tmp/integrar-microceph-microk8s.sh: 100% (4.60kB/s)                                                                                                                           [2026-08-13 01:25:36] Script copiado e permissao 700 aplicada.
+[2026-08-13 04:25:36] Instalando python3-rados e python3-rbd...
+[2026-08-13 04:25:36] Dependencias Ceph Python ja instaladas.
+[2026-08-13 04:25:36] Habilitando modulo prometheus do Ceph (se necessario)...
+module 'prometheus' is already enabled
+[2026-08-13 04:25:38] Executando microk8s connect-external-ceph...
+Looking for MicroCeph on the host
+Detected existing MicroCeph installation
+Attempting to connect to Ceph cluster
+Successfully connected to 7d3e48f0-1364-4563-b926-4e6188bc88bc (192.168.2.7:0/3549213688)
+WARNING: Pool microk8s-rbd0 already exists
+Configuring pool microk8s-rbd0 for RBD
+Successfully configured pool microk8s-rbd0 for RBD
+Creating namespace rook-ceph-external
+Error from server (AlreadyExists): namespaces "rook-ceph-external" already exists
+Configuring Ceph CSI secrets
+Successfully configured Ceph CSI secrets
+Importing Ceph CSI secrets into MicroK8s
+cluster namespace rook-ceph-external already exists
+secret/rook-ceph-mon created
+configmap/rook-ceph-mon-endpoints created
+configmap/external-cluster-user-command created
+secret/rook-csi-rbd-node created
+secret/rook-csi-rbd-provisioner created
+storageclass.storage.k8s.io/ceph-rbd created
+Importing external Ceph cluster
+NAME: rook-ceph-external
+LAST DEPLOYED: Thu Aug 13 04:25:47 2026
+NAMESPACE: rook-ceph-external
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+The Ceph Cluster has been installed. Check its status by running:
+  kubectl --namespace rook-ceph-external get cephcluster
+
+Visit https://rook.io/docs/rook/latest/CRDs/Cluster/ceph-cluster-crd/ for more information about the Ceph CRD.
+
+Important Notes:
+- You can only deploy a single cluster per namespace
+- If you wish to delete this cluster and start fresh, you will also have to wipe the OSD disks using `sfdisk`
+
+=================================================
+
+Successfully imported external Ceph cluster. You can now use the following storageclass
+to provision PersistentVolumes using Ceph CSI:
+
+NAME                          PROVISIONER                  RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+ceph-rbd                      rook-ceph.rbd.csi.ceph.com   Delete          Immediate              true                   3s
+microk8s-hostpath (default)   microk8s.io/hostpath         Delete          WaitForFirstConsumer   false                  31m
+[2026-08-13 04:25:49] connect-external-ceph concluido.
+[2026-08-13 04:25:49] Aguardando StorageClass ceph-rbd...
+[2026-08-13 04:25:50] StorageClass ceph-rbd encontrada.
+[2026-08-13 04:25:51] Criando PVC de teste test-microceph-pvc...
+persistentvolumeclaim/test-microceph-pvc created
+[2026-08-13 04:25:53] Aguardando PVC test-microceph-pvc ficar Bound...
+[2026-08-13 04:25:54] Tentativa 1/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:26:05] Tentativa 2/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:26:16] Tentativa 3/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:26:26] Tentativa 4/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:26:37] Tentativa 5/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:26:48] Tentativa 6/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:26:59] Tentativa 7/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:27:09] Tentativa 8/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:27:20] Tentativa 9/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:27:31] Tentativa 10/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:27:42] Tentativa 11/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:27:52] Tentativa 12/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:28:03] Tentativa 13/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:28:14] Tentativa 14/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:28:25] Tentativa 15/30: PVC status=Pending, aguardando 10s...
+[2026-08-13 04:28:35] PVC test-microceph-pvc esta Bound.
+[2026-08-13 04:28:36] Removendo PVC de teste...
+persistentvolumeclaim "test-microceph-pvc" deleted from default namespace
+[2026-08-13 04:28:37] StorageClass criada e testada com sucesso:
+NAME                          PROVISIONER                  RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+ceph-rbd                      rook-ceph.rbd.csi.ceph.com   Delete          Immediate              true                   2m51s
+microk8s-hostpath (default)   microk8s.io/hostpath         Delete          WaitForFirstConsumer   false                  34m
+[2026-08-13 04:28:37] Integracao MicroCeph -> MicroK8s concluida.
+[2026-08-13 01:28:37] Integracao MicroCeph -> MicroK8s concluida com sucesso.
+[2026-08-13 01:28:37] Concluido. Log salvo em: /osnix/ubunix/tofu/aws/util/logs/microceph-local-20260813-012527.log
+[2026-08-13 01:28:37] Limpando arquivos temporarios...

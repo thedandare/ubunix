@@ -1,0 +1,22 @@
+neo4j:
+  name: neo4j-standalone
+  resources:
+    cpu: "0.5"
+    memory: "2Gi"
+
+  # Uncomment to set the initial password
+  password: "F1bo6600"
+
+  # Uncomment to use enterprise edition
+  edition: "enterprise"
+  acceptLicenseAgreement: "yes"
+
+  offlineMaintenanceModeEnabled: true
+
+
+volumes:
+  data:
+    mode: defaultStorageClass
+    defaultStorageClass:
+      requests:
+        storage: 2Gi

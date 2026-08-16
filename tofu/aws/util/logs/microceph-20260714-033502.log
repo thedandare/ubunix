@@ -1,0 +1,38 @@
++ LOCK_FILE=/tmp/inicializar-cluster-microceph.lock
++ exec
++ flock -n 200
+++ mktemp -d
++ TMP_DIR=/tmp/tmp.8lg16xMFpU
++ trap cleanup EXIT INT TERM
++ CLEANUP_TARGETS=()
++ log 'Validando dependencias locais...'
+++ date '+%Y-%m-%d %H:%M:%S'
++ echo '[2026-07-14 03:35:02] Validando dependencias locais...'
+[2026-07-14 03:35:02] Validando dependencias locais...
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v dialog
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v ssh
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v scp
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v timeout
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v grep
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v sed
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v awk
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v sort
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v mktemp
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v flock
++ for cmd in dialog ssh scp timeout grep sed awk sort mktemp flock tee
++ command -v tee
++ [[ ! -r /root/.ssh/root_id_ed25519 ]]
++ [[ ! -f /osnix/ubunix/tofu/aws/util/microceph_bootstrap.sh ]]
++ [[ ! -f /osnix/ubunix/tofu/aws/util/microceph_join.sh ]]
+++ dialog --title 'Escolher VPN' --menu 'Escolha qual VPN sera usada para conectividade do cluster:' 15 60 2 tailscale 'Tailscale (padrao)' netbird 'Netbird (IP range: 100.82.0.0/16)'
+[?1049h[22;0;0t[1;24r(B[m[4l[?7h[?1h=[?1006;1000h[39;49m[?1h=[?1h=[39;49m(B[m[H[2J[21d(B[0;1m[36m[44m[J[H[K[2d[K[3d[K[4d[K[5;9H[1K (0[0;1m[37m[47mlqqqqqqqqqqqqqqqqqqqqqq(B[0;1m[34m[47mEscolher VPN(0[0;1m[37m[47mqqqqqqqqqqqqqqqqqqqqqqqq(0[0m[30m[47mk(B[0;1m[36m[44m[K[6;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m Escolha qual VPN sera usada para conectividade do        (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[7;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m cluster:[49X[7;69H(0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[8;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mlqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq(0[0;1m[37m[47mk(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[9;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0m[30m[47m     (B[0;1m[31m[44mt[33m[44mailscale(B[0m[30m[47m  (B[0;1m[37m[44mTailscale (padrao)(B[0m[30m[47m[20X[9;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[10;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0m[30m[47m     [31m[47mn(B[0;1m[34m[47metbird(B[0m[30m[47m    Netbird (IP range: 100.82.0.0/16)     (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[11;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[11;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[12;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[12;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[13;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[13;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[14;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[14;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[15;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[15;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[16;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mm(0[0;1m[37m[47mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[17;9H[1K (0[0;1m[37m[47mtqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq(0[0m[30m[47mu(B[0;1m[30m[40m  [36m[44m[K[18;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m[58X[18;69H(0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[19;9H[1K (0[0;1m[37m[47mm(0[0m[30m[47mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj(B[0;1m[30m[40m  [36m[44m[K[20;11H[1K [30m[40m[60X[20;72H[36m[44m[K[16;68H[39;49m(B[m[18;26H(B[0;1m[37m[44m<[33m[44m  OK  [37m[44m>[18;42H(B[0m[30m[47m<(B[0;1m[30m[47mCancel(B[0m[30m[47m>[18;29H[39;49m(B[m

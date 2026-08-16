@@ -1,0 +1,256 @@
+[2026-08-13 00:48:52] Validando dependencias locais...
+[2026-08-13 00:48:52] Verificando containers Incus...
+[2026-08-13 00:48:52]   leonk7s: RUNNING
+[2026-08-13 00:48:52]   leonk8s: RUNNING
+[2026-08-13 00:48:52]   leonk9s: RUNNING
+[2026-08-13 00:48:52] Obtendo IPs locais dos containers via eth0...
+[2026-08-13 00:48:52]   leonk7s -> 192.168.2.7
+[2026-08-13 00:48:53]   leonk8s -> 192.168.2.8
+[2026-08-13 00:48:53]   leonk9s -> 192.168.2.9
+[2026-08-13 00:48:53] Obtendo hostnames dos containers...
+[2026-08-13 00:48:53]   leonk7s hostname: leonk7s
+[2026-08-13 00:48:53]   leonk8s hostname: leonk8s
+[2026-08-13 00:48:53]   leonk9s hostname: leonk9s
+[2026-08-13 00:48:53] Verificando cluster MicroCeph existente no master...
+[2026-08-13 00:48:54] Membros atuais: []
+[2026-08-13 00:48:54] --- Executando bootstrap do MicroCeph no master ---
+[2026-08-13 00:48:54] >>> [leonk7s] Bootstrap do MicroCeph
+[2026-08-13 00:48:54] Copiando microceph_bootstrap.sh para leonk7s:/tmp/microceph_bootstrap.sh
+Pushing /osnix/ubunix/tofu/aws/util/microceph_bootstrap.sh to /tmp/microceph_bootstrap.sh: 100% (8.32kB/s)                                                                                                           [2026-08-13 00:48:55] Script copiado e permissao 700 aplicada.
+[2026-08-13 00:48:55] Executando bootstrap com primeiro worker: leonk8s
+[2026-08-13 03:48:55] Interface VPN: eth0  IP: 192.168.2.7
+[2026-08-13 03:48:55] Public network: 192.168.2.0/24
+[2026-08-13 03:48:55] Instalacao incompleta detectada. FRESH_INSTALL=1 -> removendo com --purge...
+[2026-08-13 03:49:00] Instalando MicroCeph pelo canal squid/stable...
+[2026-08-13 03:49:18] Aguardando servico microceph ficar ativo...
+[2026-08-13 03:49:18] MicroCeph instalado e servico ativo.
+[2026-08-13 03:49:18] Executando bootstrap...
+[2026-08-13 03:49:37] Aguardando daemon estabilizar...
+[2026-08-13 03:49:42] Adicionando dispositivo OSD: loop,4G,1
+[2026-08-13 03:49:48] Ajustando osd_pool_default_size e tolerancia a clock skew...
+[2026-08-13 03:49:53] Bootstrap concluido.
+[2026-08-13 00:49:53] Token extraido: eyJzZWNyZXQiOiIz...
+[2026-08-13 00:49:53] Token inicial obtido com sucesso.
+[2026-08-13 00:49:53] --- Executando join dos workers ---
+[2026-08-13 00:49:53] >>> [leonk8s] Join do MicroCeph
+[2026-08-13 00:49:53] Copiando microceph_join.sh para leonk8s:/tmp/microceph_join.sh
+Pushing /osnix/ubunix/tofu/aws/util/microceph_join.sh to /tmp/microceph_join.sh: 100% (5.75kB/s)                                                                                                 [2026-08-13 00:49:53] Script copiado e permissao 700 aplicada.
+[2026-08-13 03:49:53] Interface VPN: eth0  IP: 192.168.2.8
+[2026-08-13 03:49:53] Verificando conectividade com o lider 192.168.2.7...
+[2026-08-13 03:49:54] Rota ate o lider OK.
+[2026-08-13 03:49:54] Public network: 192.168.2.0/24
+[2026-08-13 03:49:55] Instalacao existente detectada. FRESH_INSTALL=1 -> removendo com --purge...
+microceph removed
+[2026-08-13 03:50:01] Instalando MicroCeph pelo canal squid/stable...
+microceph (squid/stable) 19.2.3+snapcf306793a4 from Canonical** installed
+General refreshes of "microceph" held indefinitely
+[2026-08-13 03:50:28] Aguardando snapd terminar de carregar...
+[2026-08-13 03:50:28] MicroCeph instalado e servico ativo.
+[2026-08-13 03:50:28] Executando cluster join no lider 192.168.2.7...
+[2026-08-13 03:50:40] Aguardando sincronizacao de chaves...
+[2026-08-13 03:50:45] Adicionando dispositivo OSD: loop,4G,1
+
++-----------+---------+
+|   PATH    | STATUS  |
++-----------+---------+
+| loop,4G,1 | Success |
++-----------+---------+
+[2026-08-13 03:50:52] Join concluido com sucesso.
+[2026-08-13 00:50:52] OK: leonk8s entrou no cluster.
+[2026-08-13 00:50:52] Join OK: leonk8s
+[2026-08-13 00:50:52] Token gerado para leonk9s: eyJzZWNyZXQiOiJh...
+[2026-08-13 00:50:52] >>> [leonk9s] Join do MicroCeph
+[2026-08-13 00:50:52] Copiando microceph_join.sh para leonk9s:/tmp/microceph_join.sh
+Pushing /osnix/ubunix/tofu/aws/util/microceph_join.sh to /tmp/microceph_join.sh: 100% (5.75kB/s)                                                                                                 [2026-08-13 00:50:53] Script copiado e permissao 700 aplicada.
+[2026-08-13 03:50:53] Interface VPN: eth0  IP: 192.168.2.9
+[2026-08-13 03:50:53] Verificando conectividade com o lider 192.168.2.7...
+[2026-08-13 03:50:54] Rota ate o lider OK.
+[2026-08-13 03:50:54] Public network: 192.168.2.0/24
+[2026-08-13 03:50:54] Instalacao existente detectada. FRESH_INSTALL=1 -> removendo com --purge...
+microceph removed
+[2026-08-13 03:50:59] Instalando MicroCeph pelo canal squid/stable...
+microceph (squid/stable) 19.2.3+snapcf306793a4 from Canonical** installed
+General refreshes of "microceph" held indefinitely
+[2026-08-13 03:51:24] Aguardando snapd terminar de carregar...
+[2026-08-13 03:51:24] MicroCeph instalado e servico ativo.
+[2026-08-13 03:51:24] Executando cluster join no lider 192.168.2.7...
+[2026-08-13 03:51:37] Aguardando sincronizacao de chaves...
+[2026-08-13 03:51:42] Adicionando dispositivo OSD: loop,4G,1
+
++-----------+---------+
+|   PATH    | STATUS  |
++-----------+---------+
+| loop,4G,1 | Success |
++-----------+---------+
+[2026-08-13 03:51:55] Join concluido com sucesso.
+[2026-08-13 00:51:55] OK: leonk9s entrou no cluster.
+[2026-08-13 00:51:55] Join OK: leonk9s
+[2026-08-13 00:51:55] === Verificando saude do cluster ===
+MicroCeph deployment summary:
+- leonk7s (192.168.2.7)
+  Services: mds, mgr, mon, osd
+  Disks: 1
+- leonk8s (192.168.2.8)
+  Services: mds, mgr, mon, osd
+  Disks: 1
+- leonk9s (192.168.2.9)
+  Services: mds, mgr, mon, osd
+  Disks: 1
++---------+------------------+-------+------------------------------------------------------------------+--------+
+|  NAME   |     ADDRESS      | ROLE  |                           FINGERPRINT                            | STATUS |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk7s | 192.168.2.7:7443 | voter | 77a3beddba4c552c345fd3311209651c64f5061090c0603b5c7edd5d31561d99 | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk8s | 192.168.2.8:7443 | voter | 8fc47e433ef5422392f369682a685f65ba3a363f7333269558ff5120afabac6d | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+| leonk9s | 192.168.2.9:7443 | voter | 5b7303307b3d98c93169d0f157dce31f238ab18aedbac0994b2594e7d455fb9d | ONLINE |
++---------+------------------+-------+------------------------------------------------------------------+--------+
+Error: internal error: unable to fetch unpartitoned disks: internal error: unable to fetch available disks: failed listing storage devices: Failed to find "/dev/disk/by-path/acpi-MSFT1000:00-scsi-0:0:0:1": lstat /dev/sda: no such file or directory
+  cluster:
+    id:     7d3e48f0-1364-4563-b926-4e6188bc88bc
+    health: HEALTH_OK
+ 
+  services:
+    mon: 3 daemons, quorum leonk7s,leonk8s,leonk9s (age 15s)
+    mgr: leonk7s(active, since 2m), standbys: leonk8s, leonk9s
+    osd: 3 osds: 2 up (since 49s), 3 in (since 4s)
+ 
+  data:
+    pools:   1 pools, 1 pgs
+    objects: 2 objects, 449 KiB
+    usage:   54 MiB used, 7.9 GiB / 8 GiB avail
+    pgs:     1 active+clean
+ 
+ID  CLASS  WEIGHT   TYPE NAME         STATUS  REWEIGHT  PRI-AFF
+-1         0.01167  root default                               
+-2         0.00389      host leonk7s                           
+ 1         0.00389          osd.1         up   1.00000  1.00000
+-3         0.00389      host leonk8s                           
+ 2         0.00389          osd.2         up   1.00000  1.00000
+-4         0.00389      host leonk9s                           
+ 3         0.00389          osd.3       down   1.00000  1.00000
+[2026-08-13 00:51:59] === Integrando MicroCeph com MicroK8s ===
+[2026-08-13 00:51:59] >>> [leonk7s] Integrando MicroCeph com MicroK8s
+[2026-08-13 00:51:59] Copiando integrar-microceph-microk8s.sh para leonk7s:/tmp/integrar-microceph-microk8s.sh
+Pushing /osnix/ubunix/tofu/aws/util/integrar-microceph-microk8s.sh to /tmp/integrar-microceph-microk8s.sh: 100% (4.60kB/s)                                                                                                                           [2026-08-13 00:52:00] Script copiado e permissao 700 aplicada.
+[2026-08-13 03:52:00] Instalando python3-rados e python3-rbd...
+dpkg-preconfigure: unable to re-open stdin: No such file or directory
+Selecting previously unselected package libnl-3-200:amd64.
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 32274 files and directories currently installed.)
+Preparing to unpack .../00-libnl-3-200_3.12.0-2_amd64.deb ...
+Unpacking libnl-3-200:amd64 (3.12.0-2) ...
+Selecting previously unselected package libnl-route-3-200:amd64.
+Preparing to unpack .../01-libnl-route-3-200_3.12.0-2_amd64.deb ...
+Unpacking libnl-route-3-200:amd64 (3.12.0-2) ...
+Selecting previously unselected package libibverbs1:amd64.
+Preparing to unpack .../02-libibverbs1_61.0-2ubuntu3_amd64.deb ...
+Unpacking libibverbs1:amd64 (61.0-2ubuntu3) ...
+Selecting previously unselected package ibverbs-providers:amd64.
+Preparing to unpack .../03-ibverbs-providers_61.0-2ubuntu3_amd64.deb ...
+Unpacking ibverbs-providers:amd64 (61.0-2ubuntu3) ...
+Selecting previously unselected package libaio1t64:amd64.
+Preparing to unpack .../04-libaio1t64_0.3.113-8build1_amd64.deb ...
+Unpacking libaio1t64:amd64 (0.3.113-8build1) ...
+Selecting previously unselected package libboost-iostreams1.90.0:amd64.
+Preparing to unpack .../05-libboost-iostreams1.90.0_1.90.0-6ubuntu1_amd64.deb ...
+Unpacking libboost-iostreams1.90.0:amd64 (1.90.0-6ubuntu1) ...
+Selecting previously unselected package libboost-thread1.90.0:amd64.
+Preparing to unpack .../06-libboost-thread1.90.0_1.90.0-6ubuntu1_amd64.deb ...
+Unpacking libboost-thread1.90.0:amd64 (1.90.0-6ubuntu1) ...
+Selecting previously unselected package libdaxctl1:amd64.
+Preparing to unpack .../07-libdaxctl1_81-1ubuntu1_amd64.deb ...
+Unpacking libdaxctl1:amd64 (81-1ubuntu1) ...
+Selecting previously unselected package libndctl6:amd64.
+Preparing to unpack .../08-libndctl6_81-1ubuntu1_amd64.deb ...
+Unpacking libndctl6:amd64 (81-1ubuntu1) ...
+Selecting previously unselected package libpmem1:amd64.
+Preparing to unpack .../09-libpmem1_1.13.1-1.1ubuntu4_amd64.deb ...
+Unpacking libpmem1:amd64 (1.13.1-1.1ubuntu4) ...
+Selecting previously unselected package libpmemobj1:amd64.
+Preparing to unpack .../10-libpmemobj1_1.13.1-1.1ubuntu4_amd64.deb ...
+Unpacking libpmemobj1:amd64 (1.13.1-1.1ubuntu4) ...
+Selecting previously unselected package librdmacm1t64:amd64.
+Preparing to unpack .../11-librdmacm1t64_61.0-2ubuntu3_amd64.deb ...
+Unpacking librdmacm1t64:amd64 (61.0-2ubuntu3) ...
+Selecting previously unselected package librados2.
+Preparing to unpack .../12-librados2_20.2.0-0ubuntu2_amd64.deb ...
+Unpacking librados2 (20.2.0-0ubuntu2) ...
+Selecting previously unselected package librbd1.
+Preparing to unpack .../13-librbd1_20.2.0-0ubuntu2_amd64.deb ...
+Unpacking librbd1 (20.2.0-0ubuntu2) ...
+Selecting previously unselected package python3-rados.
+Preparing to unpack .../14-python3-rados_20.2.0-0ubuntu2_amd64.deb ...
+Unpacking python3-rados (20.2.0-0ubuntu2) ...
+Selecting previously unselected package python3-rbd.
+Preparing to unpack .../15-python3-rbd_20.2.0-0ubuntu2_amd64.deb ...
+Unpacking python3-rbd (20.2.0-0ubuntu2) ...
+Setting up libboost-thread1.90.0:amd64 (1.90.0-6ubuntu1) ...
+Setting up libdaxctl1:amd64 (81-1ubuntu1) ...
+Setting up libaio1t64:amd64 (0.3.113-8build1) ...
+Setting up libnl-3-200:amd64 (3.12.0-2) ...
+Setting up libndctl6:amd64 (81-1ubuntu1) ...
+Setting up libpmem1:amd64 (1.13.1-1.1ubuntu4) ...
+Setting up libboost-iostreams1.90.0:amd64 (1.90.0-6ubuntu1) ...
+Setting up libnl-route-3-200:amd64 (3.12.0-2) ...
+Setting up libpmemobj1:amd64 (1.13.1-1.1ubuntu4) ...
+Setting up libibverbs1:amd64 (61.0-2ubuntu3) ...
+Setting up ibverbs-providers:amd64 (61.0-2ubuntu3) ...
+Setting up librdmacm1t64:amd64 (61.0-2ubuntu3) ...
+Setting up librados2 (20.2.0-0ubuntu2) ...
+Setting up librbd1 (20.2.0-0ubuntu2) ...
+Setting up python3-rados (20.2.0-0ubuntu2) ...
+Setting up python3-rbd (20.2.0-0ubuntu2) ...
+Processing triggers for libc-bin (2.43-2ubuntu2.3) ...
+[2026-08-13 03:52:14] Dependencias Ceph Python instaladas.
+[2026-08-13 03:52:14] Habilitando modulo prometheus do Ceph (se necessario)...
+[2026-08-13 03:52:16] Executando microk8s connect-external-ceph...
+Looking for MicroCeph on the host
+Detected existing MicroCeph installation
+Attempting to connect to Ceph cluster
+Successfully connected to 7d3e48f0-1364-4563-b926-4e6188bc88bc (192.168.2.7:0/3692172859)
+Creating pool microk8s-rbd0 in Ceph cluster
+Configuring pool microk8s-rbd0 for RBD
+Successfully configured pool microk8s-rbd0 for RBD
+Creating namespace rook-ceph-external
+namespace/rook-ceph-external created
+Configuring Ceph CSI secrets
+/var/snap/microk8s/common/plugins/.rook-create-external-cluster-resources.py failed
+stdout: Execution Failed: can't find monitoring_endpoint, prometheus module might not be enabled, enable the module by running 'ceph mgr module enable prometheus'
+
+stderr: Traceback (most recent call last):
+  File "/var/snap/microk8s/common/plugins/.rook-create-external-cluster-resources.py", line 2221, in <module>
+    raise err
+  File "/var/snap/microk8s/common/plugins/.rook-create-external-cluster-resources.py", line 2218, in <module>
+    rjObj.main()
+  File "/var/snap/microk8s/common/plugins/.rook-create-external-cluster-resources.py", line 2200, in main
+    generated_output = self.gen_shell_out(generation)
+  File "/var/snap/microk8s/common/plugins/.rook-create-external-cluster-resources.py", line 1802, in gen_shell_out
+    self._gen_output_map(generation)
+  File "/var/snap/microk8s/common/plugins/.rook-create-external-cluster-resources.py", line 1721, in _gen_output_map
+    ) = self.get_active_and_standby_mgrs()
+  File "/var/snap/microk8s/common/plugins/.rook-create-external-cluster-resources.py", line 800, in get_active_and_standby_mgrs
+    raise ExecutionFailureException(
+__main__.ExecutionFailureException: can't find monitoring_endpoint, prometheus module might not be enabled, enable the module by running 'ceph mgr module enable prometheus'
+
+Traceback (most recent call last):
+  File "/var/snap/microk8s/common/plugins/connect-external-ceph", line 191, in <module>
+    main()
+  File "/snap/microk8s/9092/usr/lib/python3/dist-packages/click/core.py", line 1128, in __call__
+    return self.main(*args, **kwargs)
+  File "/snap/microk8s/9092/usr/lib/python3/dist-packages/click/core.py", line 1053, in main
+    rv = self.invoke(ctx)
+  File "/snap/microk8s/9092/usr/lib/python3/dist-packages/click/core.py", line 1395, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+  File "/snap/microk8s/9092/usr/lib/python3/dist-packages/click/core.py", line 754, in invoke
+    return __callback(*args, **kwargs)
+  File "/var/snap/microk8s/common/plugins/connect-external-ceph", line 176, in main
+    import_external_ceph_cluster(ceph_conf, keyring, namespace, rbd_pool)
+  File "/var/snap/microk8s/common/plugins/connect-external-ceph", line 110, in import_external_ceph_cluster
+    p = subprocess.run(
+  File "/snap/microk8s/9092/usr/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['/snap/microk8s/9092/usr/bin/python3', PosixPath('/var/snap/microk8s/common/plugins/.rook-create-external-cluster-resources.py'), '--format=bash', '--rbd-data-pool-name=microk8s-rbd0', '--ceph-conf=/var/snap/microceph/current/conf/ceph.conf', '--keyring=/var/snap/microceph/current/conf/ceph.keyring']' returned non-zero exit status 1.
+[2026-08-13 03:52:23] ERRO: microk8s connect-external-ceph falhou
+[2026-08-13 00:52:23] AVISO: Integracao MicroCeph -> MicroK8s falhou
+[2026-08-13 00:52:23] Concluido. Log salvo em: /osnix/ubunix/tofu/aws/util/logs/microceph-local-20260813-004852.log
+[2026-08-13 00:52:23] Limpando arquivos temporarios...

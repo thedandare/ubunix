@@ -1,0 +1,58 @@
+[2026-07-14 16:43:37] Validando dependencias locais...
+[?1049h[22;0;0t[1;24r(B[m[4l[?7h[?1h=[?1006;1000h[39;49m[?1h=[?1h=[39;49m(B[m[H[2J[21d(B[0;1m[36m[44m[J[H[K[2d[K[3d[K[4d[K[5;9H[1K (0[0;1m[37m[47mlqqqqqqqqqqqqqqqqqqqqqq(B[0;1m[34m[47mEscolher VPN(0[0;1m[37m[47mqqqqqqqqqqqqqqqqqqqqqqqq(0[0m[30m[47mk(B[0;1m[36m[44m[K[6;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m Escolha qual VPN sera usada para conectividade do        (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[7;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m cluster:[49X[7;69H(0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[8;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mlqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq(0[0;1m[37m[47mk(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[9;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0m[30m[47m     (B[0;1m[31m[44mt[33m[44mailscale(B[0m[30m[47m  (B[0;1m[37m[44mTailscale (padrao)(B[0m[30m[47m[20X[9;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[10;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0m[30m[47m     [31m[47mn(B[0;1m[34m[47metbird(B[0m[30m[47m    Netbird (IP range: 100.82.0.0/16)     (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[11;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[11;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[12;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[12;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[13;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[13;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[14;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[14;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[15;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[37m[47m[54X[15;67H(0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[16;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m (0[0m[30m[47mm(0[0;1m[37m[47mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj(B[0m[30m[47m (0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[17;9H[1K (0[0;1m[37m[47mtqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq(0[0m[30m[47mu(B[0;1m[30m[40m  [36m[44m[K[18;9H[1K (0[0;1m[37m[47mx(B[0m[30m[47m[58X[18;69H(0[0m[30m[47mx(B[0;1m[30m[40m  [36m[44m[K[19;9H[1K (0[0;1m[37m[47mm(0[0m[30m[47mqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj(B[0;1m[30m[40m  [36m[44m[K[20;11H[1K [30m[40m[60X[20;72H[36m[44m[K[16;68H[39;49m(B[m[18;26H(B[0;1m[37m[44m<[33m[44m  OK  [37m[44m>[18;42H(B[0m[30m[47m<(B[0;1m[30m[47mCancel(B[0m[30m[47m>[18;29H[39;49m(B[m[20;71H[?1006;1000l[24;1H[?1049l[23;0;0t[?1l>[H[2J[3J[2026-07-14 16:43:47] VPN selecionada: Tailscale
+[2026-07-14 16:43:47] Rede publica do MicroCeph: 100.64.0.0/10
+[2026-07-14 16:43:51] Obtendo IPs Tailscale dos hosts (paralelo)...
+[2026-07-14 16:44:01] 18.226.15.5 -> tailscale0: 100.84.37.51
+[2026-07-14 16:44:01] 18.222.183.144 -> tailscale0: 100.124.206.124
+[2026-07-14 16:44:01] AUTO_SELECT: master = node0 (18.226.15.5)
+[2026-07-14 16:44:01] AUTO_SELECT: workers = 1
+[2026-07-14 16:44:01] Validando containers em execucao e nomes unicos...
+[H[2J[3J[2026-07-14 16:44:17] Master: pub=18.226.15.5 container=amnix-i-0ab7055b71b354773-1 hostname=amnix-i-0ab7055b71b354773-1 tailscale0=100.84.37.51
+[2026-07-14 16:44:17] Workers selecionados: 1
+[2026-07-14 16:44:17]   - pub=18.222.183.144 containers=amnix-i-0d84d092f1eb73825-1 amnix-i-0d84d092f1eb73825-2 tailscale0=100.124.206.124
+[2026-07-14 16:44:17] IP Tailscale do master (join endpoint): 100.84.37.51
+[2026-07-14 16:44:19] Primeiro worker para geracao do token inicial: amnix-i-0d84d092f1eb73825-1
+[2026-07-14 16:44:19] Verificando cluster MicroCeph existente no master...
+[2026-07-14 16:44:25] Membros atuais no cluster: [{"name":"amnix-i-0ab7055b71b354773-1","address":"100.84.37.51:7443","certificate":"-----BEGIN CERTIFICATE-----\nMIICIjCCAaigAwIBAgIQM1OxYlbpnNymWXN2DyEQkDAKBggqhkjOPQQDAzA5MQww\nCgYDVQQKEwNMWEQxKTAnBgNVBAMMIHJvb3RAYW1uaXgtaS0wYWI3MDU1YjcxYjM1\nNDc3My0xMB4XDTI2MDcxNDE5Mzc1MloXDTM2MDcxMTE5Mzc1MlowOTEMMAoGA1UE\nChMDTFhEMSkwJwYDVQQDDCByb290QGFtbml4LWktMGFiNzA1NWI3MWIzNTQ3NzMt\nMTB2MBAGByqGSM49AgEGBSuBBAAiA2IABOdTtJNGLf4peJazEYFiukpiWeD94Y5+\nQS8fOMEknZSO6QeFJyPqs+6qeprIZMK3qzGkwwSlsv59m3SxX7tBIuBL3Ttov61n\niWzMtNdHBsuPJJylQPIwtvluPFPLEw/5bKN1MHMwDgYDVR0PAQH/BAQDAgWgMBMG\nA1UdJQQMMAoGCCsGAQUFBwMBMAwGA1UdEwEB/wQCMAAwPgYDVR0RBDcwNYIbYW1u\naXgtaS0wYWI3MDU1YjcxYjM1NDc3My0xhwR/AAABhxAAAAAAAAAAAAAAAAAAAAAB\nMAoGCCqGSM49BAMDA2gAMGUCMD3S94o3USVMu/b8AhsI+Ll1QEdO97tgVm8lEnCd\nbQrIrRP5kfncj9Gsh3mbYVMfaAIxANJoY41GEl/7cyNEkE1rH0IvxkuO41EMlV2D\nrigO247WRravIx6DsE3FXg1O1ZXzvA==\n-----END CERTIFICATE-----\n","role":"voter","schema_internal_version":6,"schema_external_version":7,"last_heartbeat":"2026-07-14T19:44:22.694646019Z","status":"ONLINE","extensions":["internal:runtime_extension_v1","internal:rename_core_endpoints"],"secret":""}]
+[2026-07-14 16:44:25] --- Executando bootstrap do MicroCeph no master ---
+[2026-07-14 16:44:25] >>> [18.226.15.5/amnix-i-0ab7055b71b354773-1] Bootstrap do MicroCeph
+[2026-07-14 16:44:25] Copiando /osnix/ubunix/tofu/aws/util/microceph_bootstrap.sh para 18.226.15.5/amnix-i-0ab7055b71b354773-1:/tmp/microceph_bootstrap.sh
+[2026-07-14 16:44:35] Script copiado e permissao 700 aplicada.
+[2026-07-14 16:44:35] Executando bootstrap com primeiro worker: amnix-i-0d84d092f1eb73825-1
+[2026-07-14 19:44:39] Interface VPN: tailscale0  IP: 100.84.37.51
+[2026-07-14 19:44:39] Public network: 100.64.0.0/10
+[2026-07-14 19:44:40] Cluster MicroCeph ativo detectado. FRESH_INSTALL=1 -> removendo com --purge...
+[2026-07-14 19:44:52] Instalando MicroCeph pelo canal squid/stable...
+[2026-07-14 19:45:07] Aguardando servico microceph ficar ativo...
+[2026-07-14 19:45:07] MicroCeph instalado e servico ativo.
+[2026-07-14 19:45:07] Executando bootstrap...
+[2026-07-14 19:45:43] Aguardando daemon estabilizar...
+[2026-07-14 19:45:48] Adicionando dispositivo OSD: loop,4G,1
+[2026-07-14 19:45:58] Bootstrap concluido.
+[2026-07-14 16:45:56] Token extraido: eyJzZWNyZXQiOiJh...
+[2026-07-14 16:45:56] Token inicial obtido com sucesso.
+[2026-07-14 16:45:56] --- Executando join dos workers ---
+[2026-07-14 16:45:56] --- Host worker: 18.222.183.144 (amnix-i-0d84d092f1eb73825-1 tailscale0=100.124.206.124) ---
+[2026-07-14 16:46:00] >>> [18.222.183.144/amnix-i-0d84d092f1eb73825-1] Join do MicroCeph
+[2026-07-14 16:46:00] Copiando /osnix/ubunix/tofu/aws/util/microceph_join.sh para 18.222.183.144/amnix-i-0d84d092f1eb73825-1:/tmp/microceph_join.sh
+[2026-07-14 16:46:09] Script copiado e permissao 700 aplicada.
+[2026-07-14 19:46:12] Interface VPN: tailscale0  IP: 100.124.206.124
+[2026-07-14 19:46:12] Verificando conectividade com o lider 100.84.37.51...
+[2026-07-14 19:46:13] Rota ate o lider OK.
+[2026-07-14 19:46:13] Public network: 100.64.0.0/10
+[2026-07-14 19:46:16] Instalando MicroCeph pelo canal squid/stable...
+error: cannot perform the following tasks:
+- Run install hook of "microceph" snap if present (run hook "install": 
+-----
+cannot preserve mount namespace of process 8133 as microceph.mnt: Invalid argument
+unexpected eof from helper process
+-----)
+[2026-07-14 16:47:30] AVISO: Join falhou para 18.222.183.144/amnix-i-0d84d092f1eb73825-1
+[2026-07-14 16:47:30] AVISO: Join falhou: 18.222.183.144/amnix-i-0d84d092f1eb73825-1
+[2026-07-14 16:47:30] === Verificando saude do cluster no master ===
+Connection timed out during banner exchange
+Connection to 18.226.15.5 port 2409 timed out
+Connection timed out during banner exchange
+Connection to 18.226.15.5 port 2409 timed out
+Connection timed out during banner exchange
+Connection to 18.226.15.5 port 2409 timed out
