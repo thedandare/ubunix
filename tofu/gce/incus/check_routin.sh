@@ -23,39 +23,39 @@ testar_ping() {
 # --- TESTES PARA O HOST .2 (santiago0) - Bloco /28 (.16 a .31) ---
 if [ "$ULTIMO_OCTETO" -eq 2 ]; then
     echo -e "[\e[34mINFO\e[0m] Verificando containers locais do santiago0 (Bloco .16/28):"
-    testar_ping "10.42.0.17" "Container local 1"
-    testar_ping "10.42.0.18" "Container local 2"
-    testar_ping "10.42.0.19" "Container local 3"
+    testar_ping "10.42.0.18" "Container local 1"
+    testar_ping "10.42.0.19" "Container local 2"
+    testar_ping "10.42.0.20" "Container local 3"
 else
     echo "--- Testando conexões em direção ao Host .2 (santiago0) ---"
     testar_ping "10.42.0.2" "Host Físico santiago0"
-    testar_ping "10.42.0.17" "Container Remoto santiago0-1"
+    testar_ping "10.42.0.18" "Container Remoto santiago0-1"
 fi
 echo ""
 
 # --- TESTES PARA O HOST .3 (santiago1) - Bloco /28 (.32 a .47) ---
 if [ "$ULTIMO_OCTETO" -eq 3 ]; then
     echo -e "[\e[34mINFO\e[0m] Verificando containers locais do santiago1 (Bloco .32/28):"
-    testar_ping "10.42.0.33" "Container local 1"
-    testar_ping "10.42.0.34" "Container local 2"
-    testar_ping "10.42.0.35" "Container local 3"
+    testar_ping "10.42.0.34" "Container local 1"
+    testar_ping "10.42.0.35" "Container local 2"
+    testar_ping "10.42.0.36" "Container local 3"
 else
     echo "--- Testando conexões em direção ao Host .3 (santiago1) ---"
     testar_ping "10.42.0.3" "Host Físico santiago1"
-    testar_ping "10.42.0.33" "Container Remoto santiago1-1"
+    testar_ping "10.42.0.34" "Container Remoto santiago1-1"
 fi
 echo ""
 
 # --- TESTES PARA O HOST .4 (santiago2) - Bloco /28 (.48 a .63) ---
 if [ "$ULTIMO_OCTETO" -eq 4 ]; then
     echo -e "[\e[34mINFO\e[0m] Verificando containers locais do santiago2 (Bloco .48/28):"
-    testar_ping "10.42.0.49" "Container local 1"
-    testar_ping "10.42.0.50" "Container local 2"
-    testar_ping "10.42.0.51" "Container local 3"
+    testar_ping "10.42.0.50" "Container local 1"
+    testar_ping "10.42.0.51" "Container local 2"
+    testar_ping "10.42.0.52" "Container local 3"
 else
     echo "--- Testando conexões em direção ao Host .4 (santiago2) ---"
     testar_ping "10.42.0.4" "Host Físico santiago2"
-    testar_ping "10.42.0.49" "Container Remoto santiago2-1"
+    testar_ping "10.42.0.50" "Container Remoto santiago2-1"
 fi
 echo "========================================================="
 

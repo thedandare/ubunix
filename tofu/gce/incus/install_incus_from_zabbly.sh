@@ -19,7 +19,7 @@ EOF'
 sudo apt-get update
 
 if ! command -v whiptail >/dev/null 2>&1; then
-    sudo apt-get install -y whiptail 
+    sudo apt-get install -y whiptail
 fi
 
 if ! command -v incus >/dev/null 2>&1; then
@@ -29,16 +29,16 @@ if ! command -v incus >/dev/null 2>&1; then
 else
     timeout 2 whiptail --title "Incus 👌" --msgbox " Versao: $(incus --version) --  $(uname -a)" 7 70 >&2
     timeout 1 clear
-fi  
-  
+fi
+
 if ! command -v ifconfig >/dev/null 2>&1; then
     timeout 3 whiptail --title "FINALizado!" --msgbox "ifconfig não está instalado\n\nInstalando via net-tools" 7 70 >&2
     clear
-    sudo apt-get install -y net-tools 
+    sudo apt-get install -y net-tools
 fi
 
 export TERM="${TERM:-xterm-256color}"
- 
+
 answer=$(timeout --foreground 3s \
   whiptail --title "Incus init" \
     --default-item p \
@@ -47,9 +47,9 @@ answer=$(timeout --foreground 3s \
     y "Executar incus init" \
     n "Não inicializar" \
     3>&1 1>&2 2>&3)
- 
+
 exitstatus=$?
- 
+
 if [ "$exitstatus" -eq 124 ]; then
     answer="p"
 elif [ "$exitstatus" -ne 0 ]; then
@@ -179,7 +179,7 @@ profiles:
 
         - systemctl daemon-reload
         - rm -f /var/snap/microk8s/current/var/kubernetes/backend/kine.sock
-        - chmod -R 777 /var/snap/microk8s/current/var/kubernetes/backend/     
+        - chmod -R 777 /var/snap/microk8s/current/var/kubernetes/backend/
 
         - sysctl --system
         - ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf || true
@@ -211,9 +211,9 @@ IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
 ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
 
 case "$ULTIMO_OCTETO" in
-    2) BASE_IP=16 ;;
-    3) BASE_IP=32 ;;
-    4) BASE_IP=48 ;;
+    2) BASE_IP=17 ;;
+    3) BASE_IP=33 ;;
+    4) BASE_IP=49 ;;
     *)
         echo "IP do host inesperado: $IP_MAQUINA" >&2
         exit 1
@@ -254,7 +254,7 @@ for i in {1..3}; do
     IP_FINAL="10.42.0.$((BASE_IP + i))"
 
     echo "Lancando $(hostname)-$i com o IP Roteado: $IP_FINAL"
-    
+
     incus launch images:ubuntu/26.04/cloud "$(hostname)-$i" \
       --profile default \
       --profile microk8s \
