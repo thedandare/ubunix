@@ -207,9 +207,18 @@ source <(incus completion bash) 2>/dev/null || true
 # Ativa o encaminhamento de pacotes no Kernel do host (Sem isso, as rotas cruzadas morrem)
 sudo sysctl -w net.ipv4.ip_forward=1 >/dev/null
 
-ULTIMO_CHAR=$(hostname | sed 's/.*\(.\)$/\1/')
 IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
 ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
+
+case "$ULTIMO_OCTETO" in
+    2) BASE_IP=16 ;;
+    3) BASE_IP=32 ;;
+    4) BASE_IP=48 ;;
+    *)
+        echo "IP do host inesperado: $IP_MAQUINA" >&2
+        exit 1
+        ;;
+esac
 
 clr_answr=$(timeout --foreground 5s \
 whiptail --title "Incus clean" \
@@ -230,7 +239,7 @@ fi
 
 case "${clr_answr,,}" in
     s|y)
-        for i in {2..4}; do
+        for i in {1..3}; do
              incus delete -f "$(hostname)-$i" 2>/dev/null || true
         done
     ;;
@@ -241,21 +250,8 @@ esac
 
 # --- LOOP DE CRIAÇÃO PARALELA (ROUTED COM IP ESTÁTICO) ---
 echo "Disparando a criacao dos containers roteados..."
-for i in {2..4}; do
-     
-     # Dentro do loop 'for i in {1..3}; do'
-# Santiago0 (.2) inicia em 16 + i -> .17, .18, .19
-# Santiago1 (.3) inicia em 32 + i -> .33, .34, .35
-# Santiago2 (.4) inicia em 48 + i -> .49, .50, .51
-
-    if [ "$ULTIMO_CHAR" -eq 0 ]; then
-        IP_FINAL="10.42.0.$((16 + i))"
-    elif [ "$ULTIMO_CHAR" -eq 1 ]; then
-        IP_FINAL="10.42.0.$((32 + i))"
-    elif [ "$ULTIMO_CHAR" -eq 2 ]; then
-        IP_FINAL="10.42.0.$((48 + i))"
-    fi
-
+for i in {1..3}; do
+    IP_FINAL="10.42.0.$((BASE_IP + i))"
 
     echo "Lancando $(hostname)-$i com o IP Roteado: $IP_FINAL"
     
