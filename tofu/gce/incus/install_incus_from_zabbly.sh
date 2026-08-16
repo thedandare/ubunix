@@ -241,9 +241,9 @@ IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
 ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
 
 case "$ULTIMO_OCTETO" in
-    2) BASE_IP=16 ;;
-    3) BASE_IP=32 ;;
-    4) BASE_IP=48 ;;
+    17) BASE_IP=17 ;;
+    33) BASE_IP=33 ;;
+    49) BASE_IP=49 ;;
     *)
         echo "IP privado do host inesperado: $IP_MAQUINA" >&2
         exit 1
