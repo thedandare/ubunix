@@ -63,7 +63,7 @@ case "${answer,,}" in
     ;;
     p)
         # Rede routed: os containers usam aliases IP da NIC GCE do host
-        cat <<EOF | sudo incus admin init --preseed
+        cat <<'EOF' | sudo incus admin init --preseed
 config: {}
 networks: []
 storage_pools:
@@ -91,10 +91,19 @@ profiles:
     security.nesting: "true"
     security.privileged: "true"
     boot.autostart: "true"
+    linux.kernel_modules: ip_tables,ip6_tables,nf_nat,overlay,br_netfilter
+    raw.lxc: |
+      lxc.apparmor.profile=unconfined
+      lxc.cgroup.devices.allow=a
+      lxc.cap.drop=
+      lxc.mount.auto=proc:rw sys:rw cgroup:rw
     cloud-init.user-data: |
       #cloud-config
       package_update: true
       package_upgrade: true
+
+      bootcmd:
+        - [ sh, -c, "[ -e /dev/kmsg ] || ln -s /dev/console /dev/kmsg" ]
 
       write_files:
         - path: /etc/sysctl.d/99-kubernetes.conf
@@ -111,13 +120,15 @@ profiles:
           owner: root:root
           content: |
             #!/usr/bin/env bash
-            set -euo pipefail
+            set -uo pipefail
 
             SOURCE=/snap/microk8s/current/sbin/iptables-nft
             TARGET=/snap/microk8s/current/sbin/iptables
 
-            [ -x "$SOURCE" ]
-            [ -e "$TARGET" ]
+            # Roda como ExecStartPre dos daemons; durante a instalacao do snap o
+            # caminho ainda pode nao existir e falhar aqui aborta o microk8s.
+            [ -x "$SOURCE" ] || exit 0
+            [ -e "$TARGET" ] || exit 0
 
             if "$TARGET" --version 2>&1 | grep -q 'nf_tables' && \
                "$TARGET" -t nat -S >/dev/null 2>&1; then
@@ -125,10 +136,7 @@ profiles:
             fi
 
             umount "$TARGET" >/dev/null 2>&1 || true
-            mount --bind "$SOURCE" "$TARGET"
-
-            "$TARGET" --version 2>&1 | grep -q 'nf_tables'
-            "$TARGET" -t nat -S >/dev/null
+            mount --bind "$SOURCE" "$TARGET" || exit 0
 
         - path: /etc/systemd/system/snap.microk8s.daemon-containerd.service.d/20-iptables-nft.conf
           permissions: '0644'
@@ -155,7 +163,7 @@ profiles:
       runcmd:
         - echo "=== Iniciando setup ===" >> /var/log/cloud-init-debug.log
         - apt-get update >> /var/log/cloud-init-debug.log 2>&1
-        - apt-get install -y snap jq curl iptables zfsutils-linux >> /var/log/cloud-init-debug.log 2>&1
+        - apt-get install -y snapd jq curl iptables zfsutils-linux >> /var/log/cloud-init-debug.log 2>&1
 
         - echo "=== Aguardando inicializacao nativa do snapd ===" >> /var/log/cloud-init-debug.log
         - snap wait system seed.loaded >> /var/log/cloud-init-debug.log 2>&1
@@ -186,10 +194,25 @@ profiles:
         - snap set system refresh.hold=forever
 
         - /usr/local/sbin/microk8s-bind-iptables-nft
-        - /snap/microk8s/current/sbin/iptables -t nat -S >/dev/null
         - snap restart microk8s
         - microk8s status --wait-ready
-  devices: {}
+  devices:
+    aadisable:
+      path: /sys/module/nf_conntrack/parameters/hashsize
+      source: /sys/module/nf_conntrack/parameters/hashsize
+      type: disk
+    aadisable2:
+      path: /dev/kmsg
+      source: /dev/kmsg
+      type: unix-char
+    aadisable3:
+      path: /sys/fs/bpf
+      source: /sys/fs/bpf
+      type: disk
+    aadisable4:
+      path: /proc/sys/net/netfilter/nf_conntrack_max
+      source: /proc/sys/net/netfilter/nf_conntrack_max
+      type: disk
 EOF
         sudo incus profile device remove default eth0 >/dev/null 2>&1 || true
         sudo incus profile device add default eth0 nic \
@@ -241,14 +264,28 @@ IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
 ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
 
 case "$ULTIMO_OCTETO" in
-    17) BASE_IP=17 ;;
-    33) BASE_IP=33 ;;
-    49) BASE_IP=49 ;;
+    17) BASE_IP=17; ALIAS_CIDR=10.42.0.16/28 ;;
+    33) BASE_IP=33; ALIAS_CIDR=10.42.0.32/28 ;;
+    49) BASE_IP=49; ALIAS_CIDR=10.42.0.48/28 ;;
     *)
         echo "IP privado do host inesperado: $IP_MAQUINA" >&2
         exit 1
         ;;
 esac
+
+# O google-guest-agent instala os alias IPs como enderecos locais em ens4, o que
+# faz o kernel descartar o ARP dos containers como "martian source".
+printf '[IpForwarding]\nip_aliases = false\ntarget_instance_ips = false\n' \
+    | sudo tee /etc/default/instance_configs.cfg >/dev/null
+sudo systemctl restart google-guest-agent
+for offset in $(seq 1 3); do
+    sudo ip route del local "10.42.0.$((BASE_IP + offset))" dev ens4 table local 2>/dev/null || true
+done
+
+# Os alias IPs nao tem saida externa propria; o trafego de internet sai NATeado
+# pelo IP primario do host, preservando o acesso direto dentro de 10.42.0.0/24.
+sudo iptables -t nat -C POSTROUTING -s "$ALIAS_CIDR" ! -d 10.42.0.0/24 -j MASQUERADE 2>/dev/null \
+    || sudo iptables -t nat -A POSTROUTING -s "$ALIAS_CIDR" ! -d 10.42.0.0/24 -j MASQUERADE
 
 # --- LOOP DE CRIAÇÃO PARALELA NA REDE GCE ---
 echo "Disparando a criacao dos containers routed..."
@@ -267,6 +304,10 @@ ethernets:
       - to: default
         via: 169.254.0.1
         on-link: true
+    nameservers:
+      addresses:
+        - 8.8.8.8
+        - 1.1.1.1
 EOF
 )
 

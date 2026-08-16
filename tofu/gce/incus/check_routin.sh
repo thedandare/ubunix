@@ -34,6 +34,20 @@ for ip in "${CONTAINER_IPS[@]}"; do
     else
         echo "[FALHA] $ip não respondeu."
     fi
+
+    if ip route show table local | grep -q "local $ip "; then
+        echo "[FALHA] $ip está como endereço local em ens4 (google-guest-agent)."
+    fi
+done
+
+for container in $(sudo incus list -c n --format csv); do
+    echo "[INFO] $container: $(sudo incus exec "$container" -- cloud-init status 2>&1 | head -1)"
+
+    if sudo incus exec "$container" -- microk8s status --wait-ready --timeout 30 >/dev/null 2>&1; then
+        echo "[ OK ] $container tem MicroK8s rodando."
+    else
+        echo "[FALHA] $container está sem MicroK8s pronto."
+    fi
 done
 
 echo
