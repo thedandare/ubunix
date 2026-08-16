@@ -120,7 +120,7 @@ resource "google_compute_network" "nixos" {
 
 resource "google_compute_subnetwork" "nixos" {
   name          = "${var.name}-subnet"
-  region        = "southamerica-west1"  
+  region        = var.region
   network       = google_compute_network.nixos.id
   ip_cidr_range = var.subnet_cidr
 
@@ -169,7 +169,19 @@ resource "google_compute_address" "nixos" {
       "10.42.0.32/28", # santiago1: .32-.47
       "10.42.0.48/28", # santiago2: .48-.63
     ]
+  private_ips = ["10.42.0.17", "10.42.0.33", "10.42.0.49"]
+
   }
+
+resource "google_compute_address" "nixos_internal" {
+  count        = var.node_count
+  name         = "${var.name}${count.index}-internal-ip"
+  address      = local.private_ips[count.index]
+  address_type = "INTERNAL"
+  region       = var.region
+  subnetwork   = google_compute_subnetwork.nixos.id
+}
+
 
 # count=3 cria santnix0, santnix1, santnix2 distribuidos pelas zonas de local.zones.
 resource "google_compute_instance" "nixos" {
@@ -195,10 +207,8 @@ resource "google_compute_instance" "nixos" {
     }
   }
 
-
-
   network_interface {
-    subnetwork = google_compute_subnetwork.nixos.id
+    network_ip = google_compute_address.nixos_internal[count.index].address
     alias_ip_range {
       ip_cidr_range = local.alias_ip_cidrs[count.index]
     }

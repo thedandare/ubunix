@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SESSION="gcnix"
-ZONE_BASE="southamerica-west1"
+ZONE_BASE="europe-southwest1"
 SSH_PORT=22
 
 tmux kill-session -t "$SESSION" 2>/dev/null || true

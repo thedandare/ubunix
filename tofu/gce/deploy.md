@@ -24,7 +24,7 @@ gcloud config get-value project
 ## Variáveis com default (podem precisar de alteração)
 
 ### 2. region
-**Descrição:** Região GCP. Default: `southamerica-west1` (São Paulo).
+**Descrição:** Região GCP. Default: `europe-southwest1` (São Paulo).
 
 **Como obter:**
 ```bash
@@ -32,26 +32,26 @@ gcloud config get-value project
 gcloud compute regions list
 
 # Ver detalhes de uma região específica
-gcloud compute regions describe southamerica-west1
+gcloud compute regions describe europe-southwest1
 ```
 
-**Exemplo:** `southamerica-west1`, `us-central1`, `europe-west1`
+**Exemplo:** `europe-southwest1`, `us-central1`, `europe-west1`
 
 ---
 
 ### 3. zone
-**Descrição:** Zona GCP. Default: `southamerica-west1-a`. Confirme capacidade Spot para o machine_type escolhido.
+**Descrição:** Zona GCP. Default: `europe-southwest1-a`. Confirme capacidade Spot para o machine_type escolhido.
 
 **Como obter:**
 ```bash
 # Listar zonas disponíveis em uma região
-gcloud compute zones list --filter="region:southamerica-west1"
+gcloud compute zones list --filter="region:europe-southwest1"
 
 # Ver zonas com capacidade para Spot
-gcloud compute zones list --filter="region:southamerica-west1" --format="table(name,status)"
+gcloud compute zones list --filter="region:europe-southwest1" --format="table(name,status)"
 ```
 
-**Exemplo:** `southamerica-west1-a`, `southamerica-west1-b`
+**Exemplo:** `europe-southwest1-a`, `europe-southwest1-b`
 
 ---
 
@@ -61,13 +61,13 @@ gcloud compute zones list --filter="region:southamerica-west1" --format="table(n
 **Como obter:**
 ```bash
 # Listar tipos de máquina disponíveis em uma zona
-gcloud compute machine-types list --zones=southamerica-west1-a
+gcloud compute machine-types list --zones=europe-southwest1-a
 
 # Filtrar por tipos específicos (ex: E2)
-gcloud compute machine-types list --zones=southamerica-west1-a --filter="name:e2-*"
+gcloud compute machine-types list --zones=europe-southwest1-a --filter="name:e2-*"
 
 # Ver detalhes de um tipo específico
-gcloud compute machine-types describe e2-standard-2 --zone=southamerica-west1-a
+gcloud compute machine-types describe e2-standard-2 --zone=europe-southwest1-a
 ```
 
 **Exemplos:** `e2-standard-2`, `e2-standard-4`, `e2-highmem-2`, `n2-standard-2`
@@ -154,10 +154,10 @@ gcloud auth login
 gcloud config set project PROJECT_ID
 
 # Configurar região padrão
-gcloud config set compute/region southamerica-west1
+gcloud config set compute/region europe-southwest1
 
 # Configurar zona padrão
-gcloud config set compute/zone southamerica-west1-a
+gcloud config set compute/zone europe-southwest1-a
 
 # Ver configuração atual
 gcloud config list
@@ -169,8 +169,8 @@ gcloud config list
 
 ```hcl
 project_id = "meu-projeto-12345"
-region     = "southamerica-west1"
-zone       = "southamerica-west1-a"
+region     = "europe-southwest1"
+zone       = "europe-southwest1-a"
 name       = "gcenix-spot"
 machine_type = "e2-standard-2"
 
@@ -210,10 +210,10 @@ boot_disk_auto_delete = false  # Preserva disco ao destruir VM
 
 ```bash
 # Verificar cotas de Spot na região
-gcloud compute regions describe southamerica-west1 --format="value(quotas)"
+gcloud compute regions describe europe-southwest1 --format="value(quotas)"
 
 # Verificar capacidade de Spot para um tipo de máquina
-gcloud compute machine-types list --zones=southamerica-west1-a --filter="name:e2-standard-2"
+gcloud compute machine-types list --zones=europe-southwest1-a --filter="name:e2-standard-2"
 
 # Verificar imagens NixOS disponíveis
 gcloud compute images list --project=nixos-cloud --filter="name:nixos*"

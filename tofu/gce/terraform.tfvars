@@ -1,6 +1,6 @@
 project_id         = "project-1ab07399-29ab-4352-8f8"
-region             = "southamerica-west1"
-zone               = "southamerica-west1-c"
+region             = "europe-southwest1"
+zone               = "europe-southwest1-c"
 instance_name      = "gce-spot-0"
 machine_type       = "t2d-standard-1"
 nixos_image_project = "ubuntu-os-cloud"
