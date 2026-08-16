@@ -1,6 +1,6 @@
 project_id         = "project-1ab07399-29ab-4352-8f8"
-region             = "southamerica-east1"
-zone               = "southamerica-east1-c"
+region             = "us-east5"
+zone               = "us-east5-c"
 instance_name      = "nixos-gce-spot-0"
 manage_oslogin_keys = false
 machine_type       = "t2d-standard-1"

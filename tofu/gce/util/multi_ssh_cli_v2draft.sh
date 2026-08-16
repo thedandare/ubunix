@@ -41,7 +41,7 @@ if [[ ${#IPS[@]} -eq 0 ]]; then
 fi
 
 # Descobre regioes unicas e conta nodes por regiao
-# zona -> region (remove o ultimo hifen+letra, e.g. southamerica-west1-a -> southamerica-west1)
+# zona -> region (remove o ultimo hifen+letra, e.g. us-east5-a -> us-east5)
 declare -A REGIONS
 for i in "${!ZONES[@]}"; do
   region="${ZONES[$i]%-*}"

@@ -1,14 +1,16 @@
 #!/bin/bash
 
+
+
 sudo mkdir -p /etc/apt/keyrings/
-sudo curl -fsSL https://zabbly.com \
+sudo curl -fsSL https://pkgs.zabbly.com/key.asc \
     -o /etc/apt/keyrings/zabbly.asc
 
 # Add the stable repository (Ubuntu 22.04/24.04)
 sudo sh -c 'cat > /etc/apt/sources.list.d/zabbly-incus-stable.sources << EOF
 Enabled: yes
 Types: deb
-URIs: https://zabbly.com
+URIs: https://pkgs.zabbly.com/incus/stable
 Suites: $(. /etc/os-release && echo $VERSION_CODENAME)
 Components: main
 Architectures: amd64 arm64
@@ -19,22 +21,21 @@ EOF'
 sudo apt-get update
 
 if ! command -v whiptail >/dev/null 2>&1; then
-    sudo apt-get install -y whiptail 
+    apt-get install -y whiptail 
 fi
-
 if ! command -v incus >/dev/null 2>&1; then
-    timeout 3 whiptail --title "Detectando Incus" --msgbox "Incus não está instalado\n\nInstalando via apt" 7 70 >&2
+    timeout 3 whiptail --title "Detectando Incus" --msgbox "Incus ifconfig não está instalado\n\nInstalando via apt" 7 70 >&2
     clear
-    sudo apt-get install -y incus bash-completion | whiptail --progressbox "Executando apt-get" 20 70
+    sudo apt-get install -y incus bash-completion |  whiptail --progressbox "Executando apt-get " 20 70
 else
     timeout 2 whiptail --title "Incus 👌" --msgbox " Versao: $(incus --version) --  $(uname -a)" 7 70 >&2
     timeout 1 clear
 fi  
   
 if ! command -v ifconfig >/dev/null 2>&1; then
-    timeout 3 whiptail --title "FINALizado!" --msgbox "ifconfig não está instalado\n\nInstalando via net-tools" 7 70 >&2
+    timeout 3 whiptail --title "fINALizado!" --msgbox "ifconfig não está instalado\n\nInstalando via net-tools" 7 70 >&2
     clear
-    sudo apt-get install -y net-tools 
+    sudo apt-get install -y  net-tools 
 fi
 
 export TERM="${TERM:-xterm-256color}"
@@ -50,6 +51,7 @@ answer=$(timeout --foreground 3s \
  
 exitstatus=$?
  
+ 
 if [ "$exitstatus" -eq 124 ]; then
     answer="p"
 elif [ "$exitstatus" -ne 0 ]; then
@@ -57,15 +59,15 @@ elif [ "$exitstatus" -ne 0 ]; then
     answer="p"
 fi
 
+
 case "${answer,,}" in
     y)
         sudo incus admin init
     ;;
     p)
-        # Configuração de preseed em modo ROUTED puro para reter a faixa 10.42.0.X
         cat <<EOF | sudo incus admin init --preseed
 config: {}
-networks: []  # Deixamos vazio para os IPs pertencerem diretamente à rede física
+networks: []
 storage_pools:
 - config:
     size: 15GiB
@@ -74,12 +76,12 @@ storage_pools:
   driver: btrfs
 profiles:
 - name: default
-  description: "Perfil padrao com roteamento nativo"
+  description: "Perfil padrao com roteamento direto para a rede local"
   devices:
     eth0:
       name: eth0
       nictype: routed
-      parent: ens4     # Nome da sua interface física da Google Cloud
+      parent: ens4     # Usa a sua interface ens4 que tem o IP 10.42.0.X
       type: nic
     root:
       path: /
@@ -189,8 +191,8 @@ profiles:
         - /snap/microk8s/current/sbin/iptables -t nat -S >/dev/null
         - snap restart microk8s
         - microk8s status --wait-ready
-  devices: {}
 EOF
+
     ;;
      n)
         echo "Skipping init"
@@ -201,11 +203,8 @@ sed -i '/incus completion/d' ~/.bashrc
 sed -i '/bash_completion/d' ~/.bashrc
 echo 'source /usr/share/bash-completion/bash_completion' >> ~/.bashrc
 echo 'source <(incus completion bash)' >> ~/.bashrc
-source /usr/share/bash-completion/bash_completion 2>/dev/null || true
-source <(incus completion bash) 2>/dev/null || true
-
-# Ativa o encaminhamento de pacotes no Kernel do host (Sem isso, as rotas cruzadas morrem)
-sudo sysctl -w net.ipv4.ip_forward=1 >/dev/null
+source /usr/share/bash-completion/bash_completion
+source <(incus completion bash)
 
 ULTIMO_CHAR=$(hostname | sed 's/.*\(.\)$/\1/')
 IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
@@ -224,14 +223,14 @@ exitstatus=$?
 if [ "$exitstatus" -eq 124 ]; then
     clr_answr="s"
 elif [ "$exitstatus" -ne 0 ]; then
-    echo "Operação cancelada. Não limpando."
+    echo "Operação cancelada.  "
     clr_answr="n"
 fi
 
 case "${clr_answr,,}" in
     s|y)
         for i in {1..3}; do
-             incus delete -f "$(hostname)-$i" 2>/dev/null || true
+             incus rm  "$(hostname)-$i" --force
         done
     ;;
      n)
@@ -239,41 +238,45 @@ case "${clr_answr,,}" in
     ;;
 esac
 
-# --- SEÇÃO DE REDE CORRIGIDA COM WHIPTAIL ---
-echo "Configurando rotas cruzadas a partir do host físico .${ULTIMO_OCTETO}..."
 
-{
-    echo "10" ; sleep 0.2
-    if [ "$ULTIMO_OCTETO" -ne 2 ]; then
-        sudo ip route add 10.42.0.20/29 via 10.42.0.2 dev ens4 2>/dev/null || true
-        echo "-> Rota para santiago0 adicionada."
-    fi
-    echo "40" ; sleep 0.2
-    if [ "$ULTIMO_OCTETO" -ne 3 ]; then
-        sudo ip route add 10.42.0.30/29 via 10.42.0.3 dev ens4 2>/dev/null || true
-        echo "-> Rota para santiago1 adicionada."
-    fi
-    echo "70" ; sleep 0.2
-    if [ "$ULTIMO_OCTETO" -ne 4 ]; then
-        sudo ip route add 10.42.0.40/29 via 10.42.0.4 dev ens4 2>/dev/null || true
-        echo "-> Rota para santiago2 adicionada."
-    fi
-    echo "100" ; sleep 0.2
-} | whiptail --title "Roteamento" --progressbox "Configurando tabelas de rotas cruzadas..." 10 70
-
-# --- LOOP DE CRIAÇÃO PARALELA (ROUTED COM IP ESTÁTICO) ---
-echo "Disparando a criacao dos containers roteados..."
+# 2. Executa o loop de criação em paralelo
 for i in {1..3}; do
+    # Multiplica o octeto por 10 para criar a base (20, 30 ou 40)
     BASE_IP=$(( ULTIMO_OCTETO * 10 ))
     IP_FINAL="10.42.0.$((BASE_IP + i))"
     
     echo "Lancando $(hostname)-$i com o IP Roteado: $IP_FINAL"
     
-    # Inicia as instâncias atrelando o IP correto usando a flag estável --device
     incus launch images:ubuntu/24.04/cloud "$(hostname)-$i" \
       --profile default \
       --profile microk8s \
       --device eth0,ipv4.address="$IP_FINAL" &
 done
 
-echo "Processo concluído com sucesso!"
+
+# 1. Captura o IP ativo e extrai o último octeto (ex: 2, 3 ou 4)
+IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
+ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
+
+echo "Configurando rotas cruzadas a partir do host físico .${ULTIMO_OCTETO}..."
+
+# Rota para os containers do Host santiago0 (.2) -> IPs .21, .22, .23
+if [ "$ULTIMO_OCTETO" -ne 2 ]; then
+    sudo ip route add 10.42.0.20/29 via 10.42.0.2 dev ens4 2>/dev/null || true | whiptail --progressbox "Executando ip route add em santiago0" 20 70 
+    echo "-> Rota para os containers da maquina .2 adicionada com sucesso."
+fi
+
+# Rota para os containers do Host santiago1 (.3) -> IPs .31, .32, .33
+if [ "$ULTIMO_OCTETO" -ne 3 ]; then
+    sudo ip route add 10.42.0.30/29 via 10.42.0.3 dev ens4 2>/dev/null || true | whiptail --progressbox "Executando ip route add em santiago1" 20 70 
+    echo "-> Rota para os containers da maquina .3 adicionada com sucesso."
+fi
+
+# Rota para os containers do Host santiago2 (.4) -> IPs .41, .42, .43
+if [ "$ULTIMO_OCTETO" -ne 4 ]; then
+    sudo ip route add 10.42.0.40/29 via 10.42.0.4 dev ens4 2>/dev/null || true | whiptail --progressbox "Executando ip route add em santiago2" 20 70
+    echo "-> Rota para os containers da maquina .4 adicionada com sucesso."
+fi
+
+whiptail --title "fINALizado!" --msgbox "$(ifconfig ens4)" 18 170
+

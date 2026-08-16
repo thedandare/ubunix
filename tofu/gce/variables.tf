@@ -18,7 +18,7 @@ variable "zone" {
 variable "name" {
   description = "Nome base da VM e dos recursos de rede."
   type        = string
-  default     = "santiago"
+  default     = "gcnix"
 }
 
 variable "node_count" {
@@ -89,7 +89,7 @@ variable "spot_termination_action" {
 variable "assign_public_ip" {
   description = "Se true, cria IP publico na interface."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "reserve_static_ip" {
@@ -97,6 +97,8 @@ variable "reserve_static_ip" {
   type        = bool
   default     = true
 }
+
+
 
 variable "network_tier" {
   description = "Network tier do IP publico: PREMIUM ou STANDARD."

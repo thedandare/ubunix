@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SESSION="gcnix"
-ZONE_BASE="southamerica-east1"
+ZONE_BASE="us-east5"
 SSH_PORT=22
 
 tmux kill-session -t "$SESSION" 2>/dev/null || true
@@ -33,13 +33,13 @@ runpane() {
 }
 
 if [[ $# -gt 0 ]]; then
-  runpane "$P0" "santnix0" "$@"
-  runpane "$P1" "santnix1" "$@"
-  runpane "$P2" "santnix2" "$@"
+  runpane "$P0" "santiago0" "$@"
+  runpane "$P1" "santiago1" "$@"
+  runpane "$P2" "santiago2" "$@"
 else
-  runpane "$P0" "santnix0"
-  runpane "$P1" "santnix1"
-  runpane "$P2" "santnix2"
+  runpane "$P0" "santiago0"
+  runpane "$P1" "santiago1"
+  runpane "$P2" "santiago2"
 fi
 
 tmux attach -t "$SESSION"

@@ -124,7 +124,7 @@ resource "google_compute_subnetwork" "nixos" {
   network       = google_compute_network.nixos.id
   ip_cidr_range = var.subnet_cidr
 
-  private_ip_google_access = true
+  private_ip_google_access = false
 }
 
 resource "google_compute_firewall" "allow_ssh" {
@@ -162,6 +162,15 @@ resource "google_compute_address" "nixos" {
   network_tier = var.network_tier
 }
 
+
+  locals {
+    alias_ip_cidrs = [
+      "10.42.0.16/28", # santiago0: .16-.31
+      "10.42.0.32/28", # santiago1: .32-.47
+      "10.42.0.48/28", # santiago2: .48-.63
+    ]
+  }
+
 # count=3 cria santnix0, santnix1, santnix2 distribuidos pelas zonas de local.zones.
 resource "google_compute_instance" "nixos" {
   count        = var.node_count
@@ -169,12 +178,12 @@ resource "google_compute_instance" "nixos" {
   machine_type = var.machine_type
   zone         = element(local.zones, count.index)
 
-  tags = [local.network_tag]
+  tags = [local.network_tag, "https-server", "http-server"]
 
   # Importante para Incus/Kubernetes/roteamento entre bridges, caso voce use sub-redes atras da VM.
   can_ip_forward = var.can_ip_forward
 
-  allow_stopping_for_update = true
+  allow_stopping_for_update = false
 
   boot_disk {
     auto_delete = var.boot_disk_auto_delete
@@ -186,9 +195,13 @@ resource "google_compute_instance" "nixos" {
     }
   }
 
+
+
   network_interface {
     subnetwork = google_compute_subnetwork.nixos.id
-
+    alias_ip_range {
+      ip_cidr_range = local.alias_ip_cidrs[count.index]
+    }
     dynamic "access_config" {
       for_each = var.assign_public_ip ? [1] : []
       content {
