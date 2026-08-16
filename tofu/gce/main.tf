@@ -155,12 +155,44 @@ resource "google_compute_firewall" "allow_icmp" {
   }
 }
 
+resource "google_compute_firewall" "allow_internal" {
+  name    = "${var.name}-allow-internal"
+  network = google_compute_network.nixos.name
+
+  direction     = "INGRESS"
+  source_ranges = [var.subnet_cidr]
+  target_tags   = [local.network_tag]
+
+  allow {
+    protocol = "all"
+  }
+}
+
 resource "google_compute_address" "nixos" {
   count        = var.assign_public_ip && var.reserve_static_ip ? var.node_count : 0
   name         = "${var.name}${count.index}-ip"
   region       = var.region
   network_tier = var.network_tier
 }
+
+locals {
+  alias_ip_cidrs = [
+    "10.42.0.16/28", # santiago0: .17-.30 para Incus
+    "10.42.0.32/28", # santiago1: .33-.46 para Incus
+    "10.42.0.48/28", # santiago2: .49-.62 para Incus
+  ]
+  private_ips = ["10.42.0.2", "10.42.0.3", "10.42.0.4"]
+}
+
+resource "google_compute_address" "nixos_internal" {
+  count        = var.node_count
+  name         = "${var.name}${count.index}-internal-ip"
+  address      = local.private_ips[count.index]
+  address_type = "INTERNAL"
+  region       = var.region
+  subnetwork   = google_compute_subnetwork.nixos.id
+}
+
 # count=3 cria santnix0, santnix1, santnix2 distribuidos pelas zonas de local.zones.
 resource "google_compute_instance" "nixos" {
   count        = var.node_count
@@ -187,6 +219,10 @@ resource "google_compute_instance" "nixos" {
 
   network_interface {
     subnetwork = google_compute_subnetwork.nixos.id
+    network_ip = google_compute_address.nixos_internal[count.index].address
+    alias_ip_range {
+      ip_cidr_range = local.alias_ip_cidrs[count.index]
+    }
     dynamic "access_config" {
       for_each = var.assign_public_ip ? [1] : []
       content {
