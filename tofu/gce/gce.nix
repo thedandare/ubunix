@@ -1,8 +1,8 @@
 { modulesPath, ... }: {
-  imports = [ "${modulesPath}/virtualisation/google-compute-image.nix"
-   ];
+  imports = [
+    "${modulesPath}/virtualisation/google-compute-image.nix"
+    ./incus-gce.nix
+  ];
 
-  # Enable services and packages natively
   networking.hostName = "nixos-gce";
-  virtualisation.incus.enable = true; # If you still want to run Incus
 }
