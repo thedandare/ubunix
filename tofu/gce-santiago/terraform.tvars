@@ -1,0 +1,19 @@
+project_id            = "project-1ab07399-29ab-4352-8f8"
+region                = "southamerica-west1"
+zone                  = "southamerica-west1-a"
+name                  = "santnix"
+node_count            = 1
+machine_type          = "t2d-standard-1"
+nixos_image_self_link = "projects/project-1ab07399-29ab-4352-8f8/global/images/nixos-26-05-k7-202608191945"
+boot_disk_size_gb     = 25
+ssh_port              = 2409
+ssh_source_ranges     = ["0.0.0.0/0"]
+enable_oslogin        = true
+assign_public_ip      = true
+reserve_static_ip     = false
+preemptible           = true
+spot_termination_action = "STOP"
+labels = {
+  os      = "nixos"
+  pricing = "spot"
+}

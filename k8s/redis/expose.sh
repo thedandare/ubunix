@@ -69,7 +69,7 @@ REMOTE
 echo ""
 echo "=== Redis is now exposed via Traefik ==="
 echo "    in-cluster : redis.$NAMESPACE.svc:18494 (sentinel :26379)"
-echo "    external   : 34.1.25.177 / 34.1.28.21 / 34.1.17.21 on 18494 and 26379"
+echo "    external   : 34.0.220.87 / 34.1.28.21 / 34.1.17.21 on 18494 and 26379"
 echo "    password   : ./get_password.sh"
 echo "    connect    : redis-cli -h 34.1.28.21 -p 18494 -a \$(./get_password.sh)"
 echo "    NOTE: the cloud firewall must allow tcp:18494 and tcp:26379 for the"
