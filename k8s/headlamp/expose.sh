@@ -4,7 +4,7 @@ set -euo pipefail
 # Publishes Headlamp through Traefik on the cluster node IPs:
 #   Headlamp -> :4466
 
-SSH_HOST="${SSH_HOST:-root@34.0.48.251}"
+SSH_HOST="${SSH_HOST:-root@34.0.213.218}"
 SSH_KEY="${SSH_KEY:-/mnt/c/Users/leo/.ssh/root_id_ed25519}"
 if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
   SSH_KEY="$HOME/.ssh/root_id_ed25519"
@@ -69,6 +69,6 @@ REMOTE
 
 echo ""
 echo "=== Headlamp is now exposed via Traefik ==="
-echo "    external   : 34.1.25.177:$HEADLAMP_PORT / 34.1.28.21:$HEADLAMP_PORT / 34.1.17.21:$HEADLAMP_PORT"
+echo "    external   : 34.0.220.87:$HEADLAMP_PORT / 34.1.28.21:$HEADLAMP_PORT / 34.1.17.21:$HEADLAMP_PORT"
 echo "    login      : use the token printed by ./deploy-headlamp-token.sh"
 echo "    NOTE: the cloud firewall must allow tcp:$HEADLAMP_PORT for the node tag."

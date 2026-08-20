@@ -4,7 +4,7 @@
 # and expose it with ./k8s/psql/expose.sh.
 #
 # Node map:
-#   gcnix-0 (PRIMARY) : 34.1.25.177  (us-east5-a)
+#   gcnix-0 (PRIMARY) : 34.0.220.87  (us-east5-a)
 #   gcnix-1 (WORKER)  : 34.1.28.21   (us-east5-b)
 #   gcnix-2 (WORKER)  : 34.1.17.21   (us-east5-c)
 set -uo pipefail
@@ -14,7 +14,7 @@ if [ ! -f "$SSH_KEY" ]; then
   SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
 fi
 
-PRIMARY="root@34.1.25.177"
+PRIMARY="root@34.0.220.87"
 WORKER1="root@34.1.28.21"
 # gcnix-2 uses gcloud ssh since root key may not be authorized there
 GCNIX2_ZONE="us-east5-c"
@@ -75,7 +75,7 @@ run_primary "microk8s helm3 upgrade --install traefik traefik/traefik \
   --atomic=false \
   --set deployment.kind=DaemonSet \
   --set service.type=LoadBalancer \
-  --set 'service.externalIPs={34.1.25.177,34.1.28.21,34.1.17.21}' \
+  --set 'service.externalIPs={34.0.220.87,34.1.28.21,34.1.17.21}' \
   --set ports.web.hostPort=80 \
   --set ports.websecure.hostPort=443 \
   --set providers.kubernetesCRD.enabled=true \

@@ -6,19 +6,19 @@ variable "project_id" {
 variable "region" {
   description = "Regiao GCP. Sao Paulo e southamerica-west1."
   type        = string
-  default     = "southamerica-west1"
+  default     = "europe-southwest1"
 }
 
 variable "zone" {
   description = "Zona GCP padrao. Usada pelo provider e como fallback quando a regiao tem apenas uma zona."
   type        = string
-  default     = "southamerica-west1-b"
+  default     = "europe-southwest1-b"
 }
 
 variable "name" {
   description = "Nome base da VM e dos recursos de rede."
   type        = string
-  default     = "santiago"
+  default     = "espanha"
 }
 
 
@@ -96,7 +96,7 @@ variable "assign_public_ip" {
 variable "reserve_static_ip" {
   description = "Se true, reserva IP regional estatico. Para Spot com STOP costuma ser conveniente."
   type        = bool
-  default     = false
+  default     = true
 }
 
 

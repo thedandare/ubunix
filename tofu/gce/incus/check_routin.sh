@@ -1,64 +1,55 @@
 #!/bin/bash
 
-# 1. Captura o IP ativo e extrai o último octeto (ex: 2, 3 ou 4)
+set -u
+
 IP_MAQUINA=$(ip route get 1.1.1.1 | awk '{print $7}')
 ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | cut -d. -f4)
 
+case "$ULTIMO_OCTETO" in
+    17) CONTAINER_IPS=(10.42.0.18 10.42.0.19 10.42.0.20) ;;
+    33) CONTAINER_IPS=(10.42.0.34 10.42.0.35 10.42.0.36) ;;
+    49) CONTAINER_IPS=(10.42.0.50 10.42.0.51 10.42.0.52) ;;
+    *)
+        echo "[FALHA] IP privado do host inesperado: $IP_MAQUINA"
+        exit 1
+        ;;
+esac
+
 echo "========================================================="
-echo " Verificando Rede Nativa GCP/28 a partir do Host: 10.42.0.$ULTIMO_OCTETO"
+echo " Verificando workers Incus na rede GCE"
+echo " Host: $IP_MAQUINA"
 echo "========================================================="
 
-# Função auxiliar para testar o ping e exibir o resultado com cores
-testar_ping() {
-    local alvo=$1
-    local descricao=$2
-    # Executa o ping: 2 pacotes, espera no máximo 2 segundos por resposta
-    if ping -c 2 -W 2 "$alvo" > /dev/null 2>&1; then
-        echo -e "[\e[32m OK \e[0m] $descricao ($alvo) está respondendo."
+if ! sudo incus profile show default | grep -q 'nictype: routed'; then
+    echo "[FALHA] O perfil default não está usando nictype: routed."
+    exit 1
+fi
+
+sudo incus list
+echo
+
+for ip in "${CONTAINER_IPS[@]}"; do
+    if ping -c 2 -W 2 "$ip" >/dev/null 2>&1; then
+        echo "[ OK ] $ip está respondendo."
     else
-        echo -e "[\e[31mFALHA\e[0m] $descricao ($alvo) NÃO respondeu!"
+        echo "[FALHA] $ip não respondeu."
     fi
-}
 
-# --- TESTES PARA O HOST .2 (santiago0) - Bloco /28 (.16 a .31) ---
-if [ "$ULTIMO_OCTETO" -eq 2 ]; then
-    echo -e "[\e[34mINFO\e[0m] Verificando containers locais do santiago0 (Bloco .16/28):"
-    testar_ping "10.42.0.17" "Container local 1"
-    testar_ping "10.42.0.18" "Container local 2"
-    testar_ping "10.42.0.19" "Container local 3"
-else
-    echo "--- Testando conexões em direção ao Host .2 (santiago0) ---"
-    testar_ping "10.42.0.2" "Host Físico santiago0"
-    testar_ping "10.42.0.17" "Container Remoto santiago0-1"
-fi
-echo ""
+    if ip route show table local | grep -q "local $ip "; then
+        echo "[FALHA] $ip está como endereço local em ens4 (google-guest-agent)."
+    fi
+done
 
-# --- TESTES PARA O HOST .3 (santiago1) - Bloco /28 (.32 a .47) ---
-if [ "$ULTIMO_OCTETO" -eq 3 ]; then
-    echo -e "[\e[34mINFO\e[0m] Verificando containers locais do santiago1 (Bloco .32/28):"
-    testar_ping "10.42.0.33" "Container local 1"
-    testar_ping "10.42.0.34" "Container local 2"
-    testar_ping "10.42.0.35" "Container local 3"
-else
-    echo "--- Testando conexões em direção ao Host .3 (santiago1) ---"
-    testar_ping "10.42.0.3" "Host Físico santiago1"
-    testar_ping "10.42.0.33" "Container Remoto santiago1-1"
-fi
-echo ""
+for container in $(sudo incus list -c n --format csv); do
+    echo "[INFO] $container: $(sudo incus exec "$container" -- cloud-init status 2>&1 | head -1)"
 
-# --- TESTES PARA O HOST .4 (santiago2) - Bloco /28 (.48 a .63) ---
-if [ "$ULTIMO_OCTETO" -eq 4 ]; then
-    echo -e "[\e[34mINFO\e[0m] Verificando containers locais do santiago2 (Bloco .48/28):"
-    testar_ping "10.42.0.49" "Container local 1"
-    testar_ping "10.42.0.50" "Container local 2"
-    testar_ping "10.42.0.51" "Container local 3"
-else
-    echo "--- Testando conexões em direção ao Host .4 (santiago2) ---"
-    testar_ping "10.42.0.4" "Host Físico santiago2"
-    testar_ping "10.42.0.49" "Container Remoto santiago2-1"
-fi
-echo "========================================================="
+    if sudo incus exec "$container" -- microk8s status --wait-ready --timeout 30 >/dev/null 2>&1; then
+        echo "[ OK ] $container tem MicroK8s rodando."
+    else
+        echo "[FALHA] $container está sem MicroK8s pronto."
+    fi
+done
 
-# Exibe os blocos Alias IP locais ativados na placa de rede para auditoria rápida
-echo -e "\n[\e[34mINFO\e[0m] Endereços e sub-redes Alias ativos na ens4 do host físico atual:"
-ip addr show dev ens4 | grep -E "inet " --color=always
+echo
+echo "[INFO] Endereços routed ativos na ens4:"
+ip addr show dev ens4 | grep -E "inet "

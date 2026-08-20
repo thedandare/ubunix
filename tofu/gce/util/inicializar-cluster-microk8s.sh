@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -eo pipefail
 
 # ==============================================================================
@@ -6,7 +6,7 @@ set -eo pipefail
 #
 # Objetivo:
 #   1) Escolher entre Tailscale ou Netbird para conectividade VPN
-#   2) Trabalhar com as 3 instancias fixas santnix0, santnix1, santnix2
+#   2) Trabalhar com as 3 instancias fixas gcnix0, gcnix1, gcnix2
 #   3) Selecionar a instancia MASTER
 #   4) Gerar um token por no no microk8s do host master (via add-node) e fazer join
 #   5) Juntar os containers LXD (node0, node1) do proprio master e de cada host
@@ -17,23 +17,24 @@ set -eo pipefail
 
 SSH_PORT=22
 TOKEN_TTL=999999
-ZONE_BASE="southamerica-east1"
+ZONE_BASE="southamerica-west1"
 
 # Instancias fixas do cluster
-NAMES=("santnix0" "santnix1" "santnix2")
+NAMES=("santiago0" "santiago1" "santiago2")
+# NAMES=("gcnix0" "gcnix1" "gcnix2")
 ZONE_LETTERS=(a b c)
 ZONES=("${ZONE_BASE}-${ZONE_LETTERS[0]}" "${ZONE_BASE}-${ZONE_LETTERS[1]}" "${ZONE_BASE}-${ZONE_LETTERS[2]}")
 
 # Containers LXD existentes dentro de cada VM GCE (conforme user_data.cloud-config.tftpl)
 # Nomes serao definidos dinamicamente baseados no node_index da VM
-CONTAINER_ROLES=("voter" "worker" "worker")
+CONTAINER_ROLES=("voter" "voter" "voter")
 
 # Funcao para gerar nomes dos containers baseado no hostname_suffix
 get_container_names() {
   local hostname_suffix="$1"
   local names=()
   for i in 1 2 3; do
-    names+=("amnix-${hostname_suffix}-${i}")
+    names+=("santiago-${i}")
   done
   echo "${names[@]}"
 }

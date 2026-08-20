@@ -1,5 +1,5 @@
 project_id         = "project-1ab07399-29ab-4352-8f8"
-region             = "southamerica-west1"
+region             = "europe-southwest1"
 zone               = "southamerica-west1-c"
 instance_name      = "nixos-gce-spot-0"
 manage_oslogin_keys = false
