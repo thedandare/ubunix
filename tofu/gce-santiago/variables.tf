@@ -37,7 +37,7 @@ variable "machine_type" {
 variable "nixos_image_self_link" {
   description = "Self link exato da imagem custom NixOS criada."
   type        = string
-  default     = "projects/project-1ab07399-29ab-4352-8f8/global/images/nixos-26-05-k7-202608191945"
+  default     = "projects/project-1ab07399-29ab-4352-8f8/global/images/nixos-26-05-k7-202608201903"
 }
 
 variable "boot_disk_size_gb" {
@@ -76,6 +76,7 @@ variable "ssh_public_key" {
   default     = ""
 }
 
+
 variable "ssh_public_key_file" {
   description = "Caminho do arquivo de chave publica. Ignorado se ssh_public_key for informada."
   type        = string
@@ -85,7 +86,7 @@ variable "ssh_public_key_file" {
 variable "ssh_port" {
   description = "Porta SSH (a firewall abre 22 e esta porta)."
   type        = number
-  default     = 2409
+  default     = 22
 }
 
 variable "ssh_source_ranges" {

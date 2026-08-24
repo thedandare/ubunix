@@ -49,6 +49,7 @@ microk8s kubectl get clusterrolebinding headlamp-admin >/dev/null 2>&1 \
 
   echo "=== Copying manifests to remote server ==="
   remote "mkdir -p $REMOTE_DIR"
+  remote "rm -f $REMOTE_DIR/headlamp-token.yaml"
   scp -i "$SSH_KEY" -P "$SSH_PORT" -o StrictHostKeyChecking=no \
     headlamp-token.yaml "$SSH_HOST:$REMOTE_DIR/"
 

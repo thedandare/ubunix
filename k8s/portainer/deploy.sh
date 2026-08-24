@@ -6,8 +6,8 @@ set -euo pipefail
 
 SSH_HOST="root@34.0.220.87"
 SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
-if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
-  SSH_KEY="$HOME/.ssh/root_id_ed25519"
+if [ -f "/root/.ssh/root_id_ed25519" ]; then
+  SSH_KEY="/root/.ssh/root_id_ed25519"
 fi
 PORT=22
 
@@ -61,8 +61,8 @@ REMOTE
 
 echo ""
 echo "=== Portainer deployed ==="
-echo "    NodePort HTTP : http://34.1.28.21:30777"
-echo "    NodePort HTTPS: https://34.1.28.21:30779"
+echo "    NodePort HTTP : http://34.0.220.87:30777"
+echo "    NodePort HTTPS: https://34.0.220.87:30779"
 echo "    Run ./expose.sh to publish it through Traefik as well."
 echo ""
 echo "    Creating the first admin account requires the setup token printed in the pod"

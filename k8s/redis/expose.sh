@@ -5,10 +5,10 @@ set -euo pipefail
 #   Redis    -> :18494
 #   Sentinel -> :26379
 
-SSH_HOST="${SSH_HOST:-root@34.1.28.21}"
+SSH_HOST="${SSH_HOST:-root@35.215.39.218}"
 SSH_KEY="${SSH_KEY:-/mnt/c/Users/leo/.ssh/root_id_ed25519}"
-if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
-  SSH_KEY="$HOME/.ssh/root_id_ed25519"
+if [ -f "/root/.ssh/root_id_ed25519" ]; then
+  SSH_KEY="/root/.ssh/root_id_ed25519"
 fi
 PORT="${SSH_PORT:-22}"
 
@@ -25,6 +25,7 @@ cd "$(dirname "$0")"
 # ─── Step 1: Copy manifests ───────────────────────────────────────────────────
 echo "=== Copying manifests to remote server ==="
 "${SSH[@]}" "mkdir -p $REMOTE_DIR"
+"${SSH[@]}" "rm -f $REMOTE_DIR/traefik-values-redis.yaml $REMOTE_DIR/expose.yaml"
 "${SSH[@]}" "cat > $REMOTE_DIR/traefik-values-redis.yaml" < traefik-values-redis.yaml
 "${SSH[@]}" "cat > $REMOTE_DIR/expose.yaml" < expose.yaml
 
@@ -69,9 +70,9 @@ REMOTE
 echo ""
 echo "=== Redis is now exposed via Traefik ==="
 echo "    in-cluster : redis.$NAMESPACE.svc:18494 (sentinel :26379)"
-echo "    external   : 34.0.220.87 / 34.1.28.21 / 34.1.17.21 on 18494 and 26379"
+echo "    external   : 35.215.39.218 / 35.215.39.218 / 34.1.17.21 on 18494 and 26379"
 echo "    password   : ./get_password.sh"
-echo "    connect    : redis-cli -h 34.1.28.21 -p 18494 -a \$(./get_password.sh)"
+echo "    connect    : redis-cli -h 35.215.39.218 -p 18494 -a \$(./get_password.sh)"
 echo "    NOTE: the cloud firewall must allow tcp:18494 and tcp:26379 for the"
 echo "          node tag (gcnix-ssh on GCE), otherwise this only works from the"
 echo "          node/VPN. Connections on 18494 are load balanced across the"

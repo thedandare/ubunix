@@ -3,11 +3,11 @@ set -euo pipefail
 
 # Configs
 ZONE="6nix.pl"
-DOMAIN="gce.6nix.pl"
+DOMAIN="gcm.6nix.pl"
 ACCOUNT_ID="177791"
 TOKEN="dnsimple_a_lFuEZ1k9PPRaiJSnBUQBdg6WrmgJfEDt"
 
-SSH_HOST="root@34.1.28.21"
+SSH_HOST="root@35.215.39.218"
 SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
 if [ -f "$HOME/.ssh/roo t_id_ed25519" ]; then
   SSH_KEY="$HOME/.ssh/root_id_ed25519"

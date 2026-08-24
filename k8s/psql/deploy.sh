@@ -15,7 +15,9 @@ cd "$(dirname "$0")"
 
 echo "=== Checking the CloudNativePG operator ==="
 if ! remote "microk8s kubectl get deploy cnpg-controller-manager -n cnpg-system" >/dev/null 2>&1; then
-  echo "operator missing, enabling the addon..."
+  echo "operator missing, community"
+  remote "microk8s enable community"
+   echo "operator missing, enabling the addon..."
   remote "microk8s enable cloudnative-pg"
 fi
 # NOTE: no `kubectl wait`/`rollout status` anywhere in this script — they rely on
@@ -55,6 +57,7 @@ fi"
 
 echo "=== Copying manifests to remote server ==="
 remote "mkdir -p $REMOTE_DIR"
+remote "rm -f $REMOTE_DIR/psql-server.yaml"
 copy psql-server.yaml
 
 echo "=== Deploying PostgreSQL Cluster ==="
@@ -76,3 +79,4 @@ microk8s kubectl get svc -n $NAMESPACE -l cnpg.io/cluster=$CLUSTER_NAME
 
 echo ""
 echo "Password: ./get_app_secret.sh   (run ./expose.sh to reach it from outside)"
+./get_app_secret.sh  

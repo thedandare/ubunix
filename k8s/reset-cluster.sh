@@ -5,7 +5,7 @@
 #
 # Node map:
 #   gcnix-0 (PRIMARY) : 34.0.220.87  (us-east5-a)
-#   gcnix-1 (WORKER)  : 34.1.28.21   (us-east5-b)
+#   gcnix-1 (WORKER)  : 34.0.220.87   (us-east5-b)
 #   gcnix-2 (WORKER)  : 34.1.17.21   (us-east5-c)
 set -uo pipefail
 
@@ -15,7 +15,7 @@ if [ ! -f "$SSH_KEY" ]; then
 fi
 
 PRIMARY="root@34.0.220.87"
-WORKER1="root@34.1.28.21"
+WORKER1="root@34.0.220.87"
 # gcnix-2 uses gcloud ssh since root key may not be authorized there
 GCNIX2_ZONE="us-east5-c"
 PROJECT="project-1ab07399-29ab-4352-8f8"
@@ -75,7 +75,7 @@ run_primary "microk8s helm3 upgrade --install traefik traefik/traefik \
   --atomic=false \
   --set deployment.kind=DaemonSet \
   --set service.type=LoadBalancer \
-  --set 'service.externalIPs={34.0.220.87,34.1.28.21,34.1.17.21}' \
+  --set 'service.externalIPs={34.0.220.87,34.0.220.87,34.1.17.21}' \
   --set ports.web.hostPort=80 \
   --set ports.websecure.hostPort=443 \
   --set providers.kubernetesCRD.enabled=true \

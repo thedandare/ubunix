@@ -3,12 +3,12 @@ set -euo pipefail
 
 # Publishes the CloudNativePG primary through Traefik on the cluster
 # LoadBalancer IPs:
-#   PostgreSQL -> :5432
+#   PostgreSQL -> :65432
 
-SSH_HOST="${SSH_HOST:-root@34.0.50.126}"
+SSH_HOST="${SSH_HOST:-root@35.215.39.218}"
 SSH_KEY="${SSH_KEY:-/mnt/c/Users/leo/.ssh/root_id_ed25519}"
-if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
-  SSH_KEY="$HOME/.ssh/root_id_ed25519"
+if [ -f "/root/.ssh/root_id_ed25519" ]; then
+  SSH_KEY="/root/.ssh/root_id_ed25519"
 fi
 PORT="${SSH_PORT:-22}"
 
@@ -26,16 +26,17 @@ cd "$(dirname "$0")"
 # ─── Step 1: Copy manifests ───────────────────────────────────────────────────
 echo "=== Copying manifests to remote server ==="
 "${SSH[@]}" "mkdir -p $REMOTE_DIR"
+"${SSH[@]}" "rm -f $REMOTE_DIR/traefik-values-psql.yaml $REMOTE_DIR/expose.yaml"
 "${SSH[@]}" "cat > $REMOTE_DIR/traefik-values-psql.yaml" < traefik-values-psql.yaml
 "${SSH[@]}" "cat > $REMOTE_DIR/expose.yaml" < expose.yaml
 
 # ─── Step 2: Helm upgrade Traefik (idempotent) ───────────────────────────────
-# Only runs if the DaemonSet does not already bind hostPort 5432 for the
+# Only runs if the DaemonSet does not already bind hostPort 65432 for the
 # 'postgres' entrypoint.
 TRAEFIK_POSTGRES_HOSTPORT=$("${SSH[@]}" \
   "microk8s kubectl get daemonset/traefik -n ingress -o jsonpath='{range .spec.template.spec.containers[0].ports[?(@.name==\"postgres\")]}{.hostPort}{end}' 2>/dev/null || true")
 
-if [ "${TRAEFIK_POSTGRES_HOSTPORT:-}" != "5432" ] || [ -n "${FORCE_TRAEFIK_UPGRADE:-}" ]; then
+if [ "${TRAEFIK_POSTGRES_HOSTPORT:-}" != "65432" ] || [ -n "${FORCE_TRAEFIK_UPGRADE:-}" ]; then
   echo "=== Upgrading Traefik via Helm to add the 'postgres' entrypoint ==="
   "${SSH[@]}" \
     "microk8s helm upgrade traefik traefik/traefik --version $TRAEFIK_VERSION -n ingress --reuse-values --skip-schema-validation -f $REMOTE_DIR/traefik-values-psql.yaml"
@@ -70,7 +71,7 @@ REMOTE
 echo ""
 echo "=== PostgreSQL is now exposed via Traefik ==="
 echo "    in-cluster : $CLUSTER_NAME-rw.$NAMESPACE.svc:5432"
-echo "    external   : 34.0.220.87:5432 / 34.1.28.21:5432 / 34.1.17.21:5432"
-echo "    connect    : PGPASSWORD=\$(./get_app_secret.sh) psql -h 34.0.220.87 -U postgres postgres"
+echo "    external   : 35.215.39.218:65432 / 35.215.39.218:65432 / 34.1.17.21:65432"
+echo "    connect    : PGPASSWORD=\$(./get_app_secret.sh) psql -h 35.215.39.218 -U postgres postgres"
 echo "    NOTE: reachable from the internet only while the cloud firewall keeps"
-echo "          tcp:5432 open for the node tag (gcnix-ssh on GCE)."
+echo "          tcp:65432 open for the node tag (gcnix-ssh on GCE)."

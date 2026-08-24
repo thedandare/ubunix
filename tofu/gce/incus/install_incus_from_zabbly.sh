@@ -195,7 +195,11 @@ profiles:
 
         - /usr/local/sbin/microk8s-bind-iptables-nft
         - snap restart microk8s
-        - microk8s status --wait-ready
+        - microk8s status --wait-
+        - snap alias microk8s.helm3 helm
+        - snap alias microk8s.kubectl kubectl
+        - snap alias microk8s.kubectl k
+        - snap alias microk8s.helm3 h
   devices:
     aadisable:
       path: /sys/module/nf_conntrack/parameters/hashsize

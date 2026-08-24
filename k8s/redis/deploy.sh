@@ -9,21 +9,22 @@ fi
 
 # SSH key: prefer Windows OpenSSH-compatible path (avoids libcrypto issues in Git Bash)
 # Detect if running under Git Bash (MSYSTEM set) or plain WSL/Linux
-if [ -n "${MSYSTEM:-}" ]; then
-  # Git Bash on Windows — use the Windows path directly so native Windows ssh.exe is picked up
-  SSH_KEY="C:/Users/leo/.ssh/root_id_ed25519"
-  SSH_CMD="/c/Windows/System32/OpenSSH/ssh.exe"
-  if [ ! -f "$SSH_CMD" ]; then
-    SSH_CMD="ssh"
-  fi
-elif [ -f "/mnt/c/Users/leo/.ssh/root_id_ed25519" ]; then
-  SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
-  SSH_CMD="ssh"
-else
-  SSH_KEY="$HOME/.ssh/root_id_ed25519"
-  SSH_CMD="ssh"
-fi
+# if [ -n "${MSYSTEM:-}" ]; then
+#   # Git Bash on Windows — use the Windows path directly so native Windows ssh.exe is picked up
+#   SSH_KEY="C:/Users/leo/.ssh/root_id_ed25519"
+#   SSH_CMD="/c/Windows/System32/OpenSSH/ssh.exe"
+#   if [ ! -f "$SSH_CMD" ]; then
+#     SSH_CMD="ssh"
+#   fi
+# elif [ -f "/mnt/c/Users/leo/.ssh/root_id_ed25519" ]; then
+#   SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
+#   SSH_CMD="ssh"
+# else
 
+
+# fi
+  SSH_CMD="ssh"
+  SSH_KEY="/root/.ssh/root_id_ed25519"
 PORT=22
 
 # Locate local directory of the script

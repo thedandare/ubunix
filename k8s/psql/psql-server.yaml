@@ -5,15 +5,14 @@ metadata:
   namespace: default
 spec:
   # 1 primary + 2 read replicas
-  instances: 3
-
+  instances: 3 
   postgresql:
     parameters:
       max_worker_processes: "60"
     pg_hba:
       # Password auth for every TCP client; credentials come from app-secret.
       # (md5 here also accepts scram-sha-256 hashed passwords.)
-      - host all all all md5
+      - host all all all all
 
   # microk8s hostpath-storage addon provides the default storage class.
   # storage:
@@ -25,7 +24,7 @@ spec:
         - ReadWriteOnce
       resources:
         requests:
-          storage: 10Gi
+          storage: 4Gi
       # Optional: Uncomment and set your specific cloud storage class
       # storageClassName: standard  
   # Clients connect as the "postgres" superuser, which CNPG disables by default:

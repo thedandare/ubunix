@@ -1,5 +1,5 @@
 # HTTPS route on the always-open 443 entrypoint (the cloud firewall only
-# allows 443 from the outside): https://portainer.34.1.28.21.nip.io
+# allows 443 from the outside): https://portainer.34.0.220.87.nip.io
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -11,7 +11,7 @@ spec:
     - web
   routes:
     - kind: Rule
-      match: Host(`portainer.34.1.28.21.nip.io`)
+      match: Host(`pt.gce.6nix.pl `)
       services:
         - name: portainer
           port: http

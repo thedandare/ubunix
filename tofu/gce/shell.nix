@@ -9,8 +9,11 @@ pkgs.mkShellNoCC {
     google-cloud-sdk
     opentofu
     tofi
-  ];
+    tmux
+];
 
 shellHook = ''
+  alias vi=nvim
+  alias vim=nvim
 '';
 }

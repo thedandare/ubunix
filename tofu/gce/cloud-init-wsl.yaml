@@ -1,7 +1,7 @@
 #cloud-config
 package_update: true
 package_upgrade: true
-hostname: amnix-0
+hostname: wslnix
 create_hostname_file: true
 preserve_hostname: true
 # users:

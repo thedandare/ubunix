@@ -1,12 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
 for i in 7 8 9; do
   NAME="santi${i}"
 
   if ! ${pkgs.incus}/bin/incus info "$NAME" >/dev/null 2>&1; then
     echo "Container $NAME não encontrado. Criando..."
 
-    IP_MAQUINA=$(ip route get 1.1.1.1 | head -n1 | awk '{print $7}')
-    IP_PREFIX=$(echo "$IP_MAQUINA" | sed 's/\\.[0-9]\+$//')
-    ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | awk -F. '{print $4}')
+    IP_MAQUINA=$(${pkgs.iproute2}/bin/ip route get 1.1.1.1 | ${pkgs.coreutils}/bin/head -n1 | ${pkgs.gawk}/bin/awk '{print $7}')
+    IP_PREFIX=$(echo "$IP_MAQUINA" | ${pkgs.gnused}/bin/sed 's/\.[0-9]\+$//')
+    ULTIMO_OCTETO=$(echo "$IP_MAQUINA" | ${pkgs.gawk}/bin/awk -F. '{print $4}')
     IP_ADDRESS="${IP_PREFIX}.$((ULTIMO_OCTETO + i - 1))"
 
     ${pkgs.incus}/bin/incus init \

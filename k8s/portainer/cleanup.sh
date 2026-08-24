@@ -4,10 +4,10 @@ set -euo pipefail
 # Removes the Portainer Helm release and its namespaced resources.
 # PVCs are preserved unless DELETE_PVC=true is set.
 
-SSH_HOST="${SSH_HOST:-root@34.0.48.251}"
+SSH_HOST="${SSH_HOST:-root@34.0.220.87}"
 SSH_KEY="${SSH_KEY:-/mnt/c/Users/leo/.ssh/root_id_ed25519}"
-if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
-  SSH_KEY="$HOME/.ssh/root_id_ed25519"
+if [ -f "/root/.ssh/root_id_ed25519" ]; then
+  SSH_KEY="/root/.ssh/root_id_ed25519"
 fi
 PORT="${SSH_PORT:-22}"
 

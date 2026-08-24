@@ -93,10 +93,10 @@ common:
   # -- Resource requests/limits for the redis container.
   resources:
     requests:
-      cpu: 100m
+      cpu: 10m
       memory: 128Mi
     limits:
-      cpu: "1"
+      cpu: "100m"
       memory: 512Mi
   # -- Node selector / tolerations / affinity (affinity auto-generated if empty).
   nodeSelector: {}
@@ -195,7 +195,7 @@ persistence:
   storageClass: ""          # "" uses the cluster default StorageClass
   accessModes:
     - ReadWriteOnce
-  size: 8Gi
+  size: 2Gi
   annotations: {}
   # -- Retain PVCs when the StatefulSet is deleted/scaled (when supported).
   retentionPolicy:

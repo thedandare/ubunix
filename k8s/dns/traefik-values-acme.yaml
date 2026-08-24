@@ -1,0 +1,52 @@
+# Traefik ACME (Let's Encrypt) certificate resolver for DaemonSet installs.
+# Applied with: microk8s helm3 upgrade traefik traefik/traefik --reuse-values -f this-file
+#
+# IMPORTANT: replace your-email@example.com with a real email before running
+# setup_https.sh, or pass it via LE_EMAIL:
+#   LE_EMAIL=you@example.com ./setup_https.sh
+
+certificatesResolvers:
+  le:
+    acme:
+      email: your-email@example.com
+      storage: /data/acme.json
+      caServer: "https://acme-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web
+
+# For a DaemonSet we cannot share a single RWO PVC between pods.  Use a hostPath
+# directory on each node so every Traefik pod keeps its own persistent acme.json.
+# An init container runs as root to create/chown the file for the Traefik user
+# (65532) before the main container starts.
+deployment:
+  additionalVolumes:
+    - name: acme-storage
+      hostPath:
+        path: /opt/traefik-acme
+        type: DirectoryOrCreate
+  initContainers:
+    - name: acme-permissions
+      image: busybox:latest
+      securityContext:
+        runAsUser: 0
+        runAsNonRoot: false
+        capabilities:
+          add:
+            - CHOWN
+      command:
+        - sh
+        - -c
+        - |
+          mkdir -p /data
+          chown 65532:65532 /data
+          chmod 700 /data
+          touch /data/acme.json
+          chown 65532:65532 /data/acme.json
+          chmod 600 /data/acme.json
+      volumeMounts:
+        - name: acme-storage
+          mountPath: /data
+
+additionalVolumeMounts:
+  - name: acme-storage
+    mountPath: /data

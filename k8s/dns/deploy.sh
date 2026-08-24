@@ -3,13 +3,13 @@ set -euo pipefail
 
 # Configs
 ZONE="6nix.pl"
-DOMAIN="gce.6nix.pl"
+DOMAIN="gcm.6nix.pl"
 ACCOUNT_ID="177791"
 TOKEN="dnsimple_a_lFuEZ1k9PPRaiJSnBUQBdg6WrmgJfEDt"
-SSH_HOST="root@34.1.28.21"
+SSH_HOST="root@35.215.39.218"
 SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
-if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
-  SSH_KEY="$HOME/.ssh/root_id_ed25519"
+if [ -f "/root/.ssh/root_id_ed25519" ]; then
+  SSH_KEY="/root/.ssh/root_id_ed25519"
 fi
 PORT=22
 
@@ -17,15 +17,16 @@ PORT=22
 SSH_KEY_POSIX=$(echo "$SSH_KEY" | sed 's/\\/\//g')
 
 echo "=== Copying manifests to remote server ==="
-ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "mkdir -p /tmp/k8s-dns"
-ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "cat > /tmp/k8s-dns/external-dns-simple.yaml" < external-dns-simple.yaml
-ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "cat > /tmp/k8s-dns/nginx.yaml" < nginx.yaml
+ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "mkdir -p /var/tmp4/k8s-dns"
+ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "rm -f /var/tmp4/k8s-dns/external-dns-simple.yaml /var/tmp4/k8s-dns/nginx.yaml"
+ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "cat > /var/tmp4/k8s-dns/external-dns-simple.yaml" < external-dns-simple.yaml
+ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "cat > /var/tmp4/k8s-dns/nginx.yaml" < nginx.yaml
 
 echo "=== Deploying ExternalDNS ==="
-ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "microk8s kubectl apply -f /tmp/k8s-dns/external-dns-simple.yaml"
+ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "microk8s kubectl apply -f /var/tmp4/k8s-dns/external-dns-simple.yaml"
 
 echo "=== Deploying Nginx Service ==="
-ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "microk8s kubectl apply -f /tmp/k8s-dns/nginx.yaml"
+ssh -i "$SSH_KEY_POSIX" -p $PORT  -o StrictHostKeyChecking=no "$SSH_HOST" "microk8s kubectl apply -f /var/tmp4/k8s-dns/nginx.yaml"
 
 echo "=== Waiting for Ingress to be created ==="
 while true; do

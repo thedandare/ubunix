@@ -101,4 +101,8 @@ runcmd:
   # - netbird up --setup-key 0F6C131F-EEC5-4AAE-A253-24E55AE27688
 
   - microk8s status --wait-ready
+  - snap alias microk8s.helm3 helm
+  - snap alias microk8s.kubectl kubectl
+  - snap alias microk8s.kubectl k
+  - snap alias microk8s.helm3 h
  

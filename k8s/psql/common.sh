@@ -2,11 +2,11 @@
 # Shared SSH/kubectl helpers for the psql scripts.
 # Override with env vars, e.g. SSH_HOST=root@1.2.3.4 ./deploy.sh
 
-SSH_HOST="${SSH_HOST:-root@34.1.25.177}"
+SSH_HOST="${SSH_HOST:-root@34.0.220.87}"
 SSH_PORT="${SSH_PORT:-22}"
 CLUSTER_NAME="${CLUSTER_NAME:-postgres-server}"
 NAMESPACE="${NAMESPACE:-default}"
-REMOTE_DIR="${REMOTE_DIR:-/tmp/k8s-psql}"
+REMOTE_DIR="${REMOTE_DIR:-/tmp2/k8s-psql}"
 
 if [ -z "${SSH_KEY:-}" ]; then
   for candidate in "$HOME/.ssh/root_id_ed25519" /root/.ssh/root_id_ed25519 /mnt/c/Users/leo/.ssh/root_id_ed25519; do
@@ -25,5 +25,8 @@ remote() {
 }
 
 copy() {
+  for f in "$@"; do
+    remote "rm -f \"$REMOTE_DIR/$(basename "$f")\" 2>/dev/null" || true
+  done
   scp -i "$SSH_KEY" -P "$SSH_PORT" -o StrictHostKeyChecking=no "$@" "$SSH_HOST:$REMOTE_DIR/"
 }

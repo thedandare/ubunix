@@ -1,13 +1,22 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   provisionRaw = builtins.readFile ./incus-vm-provision-gce.sh;
   provisionScript =
-    builtins.replaceStrings [ "\${pkgs.incus}" ] [ "${pkgs.incus}" ] provisionRaw;
+    builtins.replaceStrings 
+      [ "\${pkgs.incus}" "\${pkgs.iproute2}" "\${pkgs.coreutils}" "\${pkgs.gawk}" "\${pkgs.gnused}" ]
+      [ "${pkgs.incus}" "${pkgs.iproute2}" "${pkgs.coreutils}" "${pkgs.gawk}" "${pkgs.gnused}" ]
+      provisionRaw;
 
-  cloudInitRaw = builtins.readFile /etc/nixos/virtualisation/cloud-init.yaml;
+  cloudInitRaw = builtins.readFile ./cloud-init.yaml;
 in
 {
+  # Enable IP forwarding for Incus routed containers
+  boot.kernel.sysctl = {
+    "net.ipv4.conf.all.forwarding" = 1;
+    "net.ipv4.conf.eth0.forwarding" = 1;
+  };
+
   virtualisation.incus = {
     enable = true;
 
@@ -30,7 +39,7 @@ in
             eth0 = {
               name = "eth0";
               nictype = "routed";
-              parent = "ens4";
+              parent = "eth0";
               type = "nic";
             };
             root = {

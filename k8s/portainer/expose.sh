@@ -5,10 +5,10 @@ set -euo pipefail
 #   UI   -> :9000
 #   Edge -> :8000
 
-SSH_HOST="root@34.0.50.126"
+SSH_HOST="root@35.215.39.218"
 SSH_KEY="/mnt/c/Users/leo/.ssh/root_id_ed25519"
-if [ -f "$HOME/.ssh/root_id_ed25519" ]; then
-  SSH_KEY="$HOME/.ssh/root_id_ed25519"
+if [ -f "/root/.ssh/root_id_ed25519" ]; then
+  SSH_KEY="/root/.ssh/root_id_ed25519"
 fi
 PORT=22
 
@@ -23,6 +23,7 @@ cd "$(dirname "$0")"
 # ─── Step 1: Copy manifests ───────────────────────────────────────────────────
 echo "=== Copying manifests to remote server ==="
 "${SSH[@]}" "mkdir -p $REMOTE_DIR"
+"${SSH[@]}" "rm -f $REMOTE_DIR/expose.yaml"
 "${SSH[@]}" "cat > $REMOTE_DIR/expose.yaml" < expose.yaml
 
 # ─── Step 2: Add entrypoints to the MicroK8s-managed Traefik DaemonSet ────────
@@ -79,13 +80,13 @@ echo "--- IngressRoute / IngressRouteTCP ---"
 microk8s kubectl get ingressroute,ingressroutetcp -n portainer
 echo ""
 echo "--- HTTPS probe via Traefik ---"
-curl -sk -o /dev/null -w 'https://portainer.34.1.28.21.nip.io -> %{http_code}\n' https://portainer.34.1.28.21.nip.io/
+curl -sk -o /dev/null -w 'https://portainer.35.215.39.218.nip.io -> %{http_code}\n' https://portainer.35.215.39.218.nip.io/
 REMOTE
 
 echo ""
 echo "=== Portainer is now exposed via Traefik ==="
-echo "    UI (public, 443): https://portainer.34.1.28.21.nip.io"
-echo "    UI (node-local) : http://34.1.28.21:9000"
-echo "    Edge agents     : 34.1.28.21:8000"
+echo "    UI (public, 443): https://portainer.35.215.39.218.nip.io"
+echo "    UI (node-local) : http://35.215.39.218:9000"
+echo "    Edge agents     : 35.215.39.218:8000"
 echo "    NOTE: the cloud firewall only allows 443 from outside the cluster;"
 echo "          9000/8000 are reachable from the node/VPN only."

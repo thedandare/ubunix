@@ -57,7 +57,7 @@ spec:
         - --source=service
         - --source=ingress
         - --policy=upsert-only
-        - --domain-filter=gce.6nix.pl
+        - --domain-filter=gcm.6nix.pl
         - --provider=dnsimple
         - --registry=txt
         env:

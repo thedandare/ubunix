@@ -1,0 +1,18 @@
+# Letta App Server HTTP and WebSocket route through the MicroK8s Traefik ingress.
+# Replace the hostname if a dedicated DNS record is available.
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: letta-app-server
+  namespace: letta
+spec:
+  entryPoints:
+    - websecure
+    - web
+  routes:
+    - kind: Rule
+      match: Host(`letta.35.215.33.107.nip.io`)
+      services:
+        - name: letta-app-server
+          port: 4500
+  tls: {}
